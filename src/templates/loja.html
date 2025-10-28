@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Loja - Sistema EAN</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+        .navbar {
+            margin-bottom: 20px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .table th, .table td {
+            vertical-align: middle;
+        }
+        .destino-loja {
+            background-color: #007bff !important;
+            color: #fff !important;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        #notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: none;
+        }
+        .header-loja {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+        }
+        .stats-card {
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-shop"></i> Painel Loja
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin') }}">
+                            <i class="bi bi-arrow-left"></i> Voltar ao Admin
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-link">Olá, {{ session.usuario_nome }}</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Sair</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div id="notification" class="alert alert-dismissible fade show">
+            <span id="notification-message"></span>
+            <button type="button" class="btn-close" onclick="hideNotification()"></button>
+        </div>
+
+        <!-- Estatísticas -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">Total de Produtos</h5>
+                        <h2 class="text-primary" id="totalProdutos">0</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">Quantidade Total</h5>
+                        <h2 class="text-primary" id="quantidadeTotal">0</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">Últimos 7 dias</h5>
+                        <h2 class="text-primary" id="produtosRecentes">0</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">Usuários Ativos</h5>
+                        <h2 class="text-primary" id="usuariosAtivos">0</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Produtos -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header header-loja d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="bi bi-box-seam"></i> Produtos Enviados para Loja
+                        </h5>
+                        <div>
+                            <button id="refreshBtn" class="btn btn-light btn-sm me-2">
+                                <i class="bi bi-arrow-clockwise"></i> Atualizar
+                            </button>
+                            <button id="exportBtn" class="btn btn-light btn-sm">
+                                <i class="bi bi-download"></i> Exportar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th>EAN</th>
+                                        <th>Nome do Produto</th>
+                                        <th>Cor</th>
+                                        <th>Voltagem</th>
+                                        <th>Modelo</th>
+                                        <th>Quantidade</th>
+                                        <th>Usuário</th>
+                                        <th>Data de Envio</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="produtosList">
+                                    <tr id="loading-row">
+                                        <td colspan="9" class="text-center">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Carregando...</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Variáveis globais
+        let produtosList = document.getElementById('produtosList');
+        let refreshBtn = document.getElementById('refreshBtn');
+        let exportBtn = document.getElementById('exportBtn');
+
+        // Função para mostrar notificações
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            const messageElement = document.getElementById('notification-message');
+            
+            notification.className = `alert alert-${type} alert-dismissible fade show`;
+            messageElement.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                hideNotification();
+            }, 5000);
+        }
+
+        function hideNotification() {
+            document.getElementById('notification').style.display = 'none';
+        }
+
+        // Função para carregar produtos da loja
+        function carregarProdutosLoja() {
+            fetch('/api/produtos-loja')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        showNotification(data.error, 'danger');
+                        return;
+                    }
+                    
+                    atualizarListaProdutos(data.produtos);
+                    atualizarEstatisticas(data.estatisticas);
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    showNotification('Erro ao carregar produtos da loja', 'danger');
+                });
+        }
+
+        // Função para atualizar a lista de produtos
+        function atualizarListaProdutos(produtos) {
+            produtosList.innerHTML = '';
+            
+            if (produtos.length === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = '<td colspan="9" class="text-center text-muted">Nenhum produto enviado para a loja</td>';
+                produtosList.appendChild(emptyRow);
+                return;
+            }
+
+            produtos.forEach(produto => {
+                const row = document.createElement('tr');
+                
+                // Determinar status
+                let statusBadge = '';
+                if (produto.validado) {
+                    statusBadge = '<span class="badge bg-success">Validado</span>';
+                } else {
+                    statusBadge = '<span class="badge bg-warning">Pendente</span>';
+                }
+                
+                row.innerHTML = `
+                    <td><code>${produto.ean}</code></td>
+                    <td>${produto.nome}</td>
+                    <td>${produto.cor || '-'}</td>
+                    <td>${produto.voltagem || '-'}</td>
+                    <td>${produto.modelo || '-'}</td>
+                    <td><span class="badge bg-primary">${produto.quantidade}</span></td>
+                    <td>${produto.usuario_nome}</td>
+                    <td>${produto.data_envio_formatada}</td>
+                    <td>${statusBadge}</td>
+                `;
+                
+                produtosList.appendChild(row);
+            });
+        }
+
+        // Função para atualizar estatísticas
+        function atualizarEstatisticas(stats) {
+            document.getElementById('totalProdutos').textContent = stats.total_produtos;
+            document.getElementById('quantidadeTotal').textContent = stats.quantidade_total;
+            document.getElementById('produtosRecentes').textContent = stats.produtos_recentes;
+            document.getElementById('usuariosAtivos').textContent = stats.usuarios_ativos;
+        }
+
+        // Event listeners
+        refreshBtn.addEventListener('click', function() {
+            showNotification('Atualizando dados...', 'info');
+            carregarProdutosLoja();
+        });
+
+        exportBtn.addEventListener('click', function() {
+            window.location.href = '/api/export-loja';
+        });
+
+        // Carregar dados ao inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarProdutosLoja();
+            
+            // Atualizar automaticamente a cada 30 segundos
+            setInterval(carregarProdutosLoja, 30000);
+        });
+    </script>
+</body>
+</html>
+

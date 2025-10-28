@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stand-by - Sistema de Cadastro de Produtos</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            margin-bottom: 20px;
+        }
+        .card {
+            margin-bottom: 20px;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0,0,0,.15);
+        }
+        .card-header {
+            background-color: #ffc107;
+            color: #212529;
+            font-weight: bold;
+            border-radius: 0.5rem 0.5rem 0 0 !important;
+        }
+        .lista-standby {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 0.5rem;
+            padding: 15px;
+            margin: 10px 0;
+            transition: all 0.3s ease;
+        }
+        .lista-standby:hover {
+            background-color: #fff8e1;
+            box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,.1);
+        }
+        .lista-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .lista-info {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        .produto-item {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            padding: 8px;
+            margin: 5px 0;
+            font-size: 0.85em;
+        }
+        .btn-retirar {
+            background-color: #28a745;
+            border-color: #28a745;
+            color: white;
+        }
+        .btn-retirar:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+            color: white;
+        }
+        .btn-detalhes {
+            background-color: #17a2b8;
+            border-color: #17a2b8;
+            color: white;
+        }
+        .btn-detalhes:hover {
+            background-color: #138496;
+            border-color: #117a8b;
+            color: white;
+        }
+        .status-aguardando {
+            background-color: #ffc107;
+            color: #212529;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: bold;
+        }
+        .contador-produtos {
+            background-color: #007bff;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-warning">
+        <a class="navbar-brand text-dark" href="#">
+            <i class="fas fa-pause-circle"></i> Stand-by
+        </a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="/admin">
+                        <i class="fas fa-arrow-left"></i> Voltar ao Painel
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link text-dark" href="/logout">
+                        <i class="fas fa-sign-out-alt"></i> Sair
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-clock"></i> Listas Aguardando Retirada
+                        <span class="float-right">
+                            <span id="contadorListas" class="badge badge-dark">0</span> lista(s) em stand-by
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <!-- Filtros e Controles -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="filtroUsuario" placeholder="Filtrar por usuário...">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" onclick="filtrarListas()">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <select class="form-control" id="filtroData" onchange="filtrarListas()">
+                                    <option value="">Todas as datas</option>
+                                    <option value="hoje">Hoje</option>
+                                    <option value="ontem">Ontem</option>
+                                    <option value="semana">Esta semana</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <button class="btn btn-info btn-block" onclick="atualizarListas()">
+                                    <i class="fas fa-sync-alt"></i> Atualizar
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Lista de Listas em Stand-by -->
+                        <div id="listasStandby">
+                            <!-- Conteúdo será carregado via JavaScript -->
+                        </div>
+
+                        <!-- Estado Vazio -->
+                        <div id="estadoVazio" class="empty-state" style="display: none;">
+                            <i class="fas fa-inbox"></i>
+                            <h4>Nenhuma lista em stand-by</h4>
+                            <p>Quando listas forem enviadas do Sistema de Cadastro de Produtos, elas aparecerão aqui aguardando retirada.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalhes da Lista -->
+    <div class="modal fade" id="modalDetalhesLista" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-list"></i> Detalhes da Lista
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="conteudoDetalhesLista">
+                        <!-- Conteúdo será carregado via JavaScript -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Fechar
+                    </button>
+                    <button type="button" class="btn btn-success" id="btnRetirarModal" onclick="retirarListaModal()">
+                        <i class="fas fa-check"></i> Retirar Lista
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Retirada -->
+    <div class="modal fade" id="modalConfirmarRetirada" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title text-dark">
+                        <i class="fas fa-exclamation-triangle"></i> Confirmar Retirada
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Tem certeza que deseja retirar esta lista do stand-by?</p>
+                    <div id="infoListaRetirada"></div>
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Atenção:</strong> Esta ação não pode ser desfeita. A lista será removida do stand-by.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-success" id="btnConfirmarRetirada" onclick="confirmarRetirada()">
+                        <i class="fas fa-check"></i> Confirmar Retirada
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        let listasStandby = [];
+        let listaParaRetirar = null;
+
+        // Carregar listas em stand-by ao inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarListasStandby();
+        });
+
+        // Carregar listas em stand-by
+        function carregarListasStandby() {
+            fetch('/api/listas_standby')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        listasStandby = data.listas;
+                        renderizarListas();
+                        atualizarContador();
+                    } else {
+                        console.error('Erro ao carregar listas:', data.message);
+                        mostrarEstadoVazio();
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro na requisição:', error);
+                    mostrarEstadoVazio();
+                });
+        }
+
+        // Renderizar listas na interface
+        function renderizarListas() {
+            const container = document.getElementById('listasStandby');
+            const estadoVazio = document.getElementById('estadoVazio');
+
+            if (listasStandby.length === 0) {
+                mostrarEstadoVazio();
+                return;
+            }
+
+            estadoVazio.style.display = 'none';
+            
+            let html = '';
+            listasStandby.forEach(lista => {
+                const dataEnvio = new Date(lista.data_envio).toLocaleString('pt-BR');
+                const totalProdutos = lista.produtos ? lista.produtos.length : 0;
+                
+                html += `
+                    <div class="lista-standby" data-lista-id="${lista.id}">
+                        <div class="lista-header">
+                            <div>
+                                <h6 class="mb-1">
+                                    <i class="fas fa-user"></i> ${lista.usuario_nome}
+                                    <span class="status-aguardando ml-2">AGUARDANDO</span>
+                                </h6>
+                                <div class="lista-info">
+                                    <i class="fas fa-clock"></i> Enviado em: ${dataEnvio}
+                                    <span class="contador-produtos ml-2">${totalProdutos} produto(s)</span>
+                                </div>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-detalhes mr-2" onclick="verDetalhes(${lista.id})">
+                                    <i class="fas fa-eye"></i> Detalhes
+                                </button>
+                                <button class="btn btn-sm btn-retirar" onclick="prepararRetirada(${lista.id})">
+                                    <i class="fas fa-check"></i> Retirar
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Preview dos primeiros produtos -->
+                        <div class="produtos-preview">
+                            ${renderizarPreviewProdutos(lista.produtos)}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Renderizar preview dos produtos
+        function renderizarPreviewProdutos(produtos) {
+            if (!produtos || produtos.length === 0) {
+                return '<div class="produto-item">Nenhum produto na lista</div>';
+            }
+
+            let html = '';
+            const maxPreview = 3;
+            
+            for (let i = 0; i < Math.min(produtos.length, maxPreview); i++) {
+                const produto = produtos[i];
+                html += `
+                    <div class="produto-item">
+                        <strong>${produto.nome}</strong> | EAN: ${produto.ean} | Qtd: ${produto.quantidade}
+                    </div>
+                `;
+            }
+
+            if (produtos.length > maxPreview) {
+                html += `
+                    <div class="produto-item text-muted">
+                        <i class="fas fa-ellipsis-h"></i> E mais ${produtos.length - maxPreview} produto(s)...
+                    </div>
+                `;
+            }
+
+            return html;
+        }
+
+        // Mostrar estado vazio
+        function mostrarEstadoVazio() {
+            document.getElementById('listasStandby').innerHTML = '';
+            document.getElementById('estadoVazio').style.display = 'block';
+        }
+
+        // Atualizar contador
+        function atualizarContador() {
+            document.getElementById('contadorListas').textContent = listasStandby.length;
+        }
+
+        // Ver detalhes da lista
+        function verDetalhes(listaId) {
+            const lista = listasStandby.find(l => l.id === listaId);
+            if (!lista) return;
+
+            const dataEnvio = new Date(lista.data_envio).toLocaleString('pt-BR');
+            
+            let html = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-user"></i> Usuário:</h6>
+                        <p>${lista.usuario_nome}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-clock"></i> Data de Envio:</h6>
+                        <p>${dataEnvio}</p>
+                    </div>
+                </div>
+                
+                <h6><i class="fas fa-list"></i> Produtos na Lista:</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>EAN</th>
+                                <th>Nome</th>
+                                <th>Cor</th>
+                                <th>Voltagem</th>
+                                <th>Modelo</th>
+                                <th>Qtd</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            if (lista.produtos && lista.produtos.length > 0) {
+                lista.produtos.forEach(produto => {
+                    html += `
+                        <tr>
+                            <td>${produto.ean}</td>
+                            <td>${produto.nome}</td>
+                            <td>${produto.cor || '-'}</td>
+                            <td>${produto.voltagem || '-'}</td>
+                            <td>${produto.modelo || '-'}</td>
+                            <td>${produto.quantidade}</td>
+                        </tr>
+                    `;
+                });
+            } else {
+                html += '<tr><td colspan="6" class="text-center">Nenhum produto na lista</td></tr>';
+            }
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('conteudoDetalhesLista').innerHTML = html;
+            document.getElementById('btnRetirarModal').setAttribute('data-lista-id', listaId);
+            $('#modalDetalhesLista').modal('show');
+        }
+
+        // Preparar retirada da lista
+        function prepararRetirada(listaId) {
+            const lista = listasStandby.find(l => l.id === listaId);
+            if (!lista) return;
+
+            listaParaRetirar = lista;
+            
+            const dataEnvio = new Date(lista.data_envio).toLocaleString('pt-BR');
+            const totalProdutos = lista.produtos ? lista.produtos.length : 0;
+            
+            document.getElementById('infoListaRetirada').innerHTML = `
+                <div class="card">
+                    <div class="card-body">
+                        <h6><i class="fas fa-user"></i> Usuário: ${lista.usuario_nome}</h6>
+                        <p><i class="fas fa-clock"></i> Enviado em: ${dataEnvio}</p>
+                        <p><i class="fas fa-box"></i> Total de produtos: ${totalProdutos}</p>
+                    </div>
+                </div>
+            `;
+
+            $('#modalConfirmarRetirada').modal('show');
+        }
+
+        // Retirar lista via modal de detalhes
+        function retirarListaModal() {
+            const listaId = document.getElementById('btnRetirarModal').getAttribute('data-lista-id');
+            $('#modalDetalhesLista').modal('hide');
+            prepararRetirada(parseInt(listaId));
+        }
+
+        // Confirmar retirada
+        function confirmarRetirada() {
+            if (!listaParaRetirar) return;
+
+            fetch('/api/retirar_lista_standby', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    lista_id: listaParaRetirar.id
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    $('#modalConfirmarRetirada').modal('hide');
+                    
+                    // Remover da lista local
+                    listasStandby = listasStandby.filter(l => l.id !== listaParaRetirar.id);
+                    renderizarListas();
+                    atualizarContador();
+                    
+                    // Mostrar mensagem de sucesso
+                    alert('Lista retirada do stand-by com sucesso!');
+                    
+                    listaParaRetirar = null;
+                } else {
+                    alert('Erro ao retirar lista: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Erro na requisição:', error);
+                alert('Erro ao retirar lista.');
+            });
+        }
+
+        // Atualizar listas
+        function atualizarListas() {
+            carregarListasStandby();
+        }
+
+        // Filtrar listas (implementação básica)
+        function filtrarListas() {
+            const filtroUsuario = document.getElementById('filtroUsuario').value.toLowerCase();
+            const filtroData = document.getElementById('filtroData').value;
+            
+            // Implementar lógica de filtro aqui
+            // Por enquanto, apenas recarrega as listas
+            carregarListasStandby();
+        }
+    </script>
+</body>
+</html>
+

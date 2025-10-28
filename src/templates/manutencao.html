@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Manutenção - Sistema de Cadastro de Produtos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+        
+        .stats-card {
+            border-left: 4px solid;
+            transition: transform 0.2s;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .stats-card.danger {
+            border-left-color: #dc3545;
+        }
+        
+        .stats-card.success {
+            border-left-color: #198754;
+        }
+        
+        .stats-card.warning {
+            border-left-color: #ffc107;
+        }
+        
+        .stats-card.info {
+            border-left-color: #0dcaf0;
+        }
+        
+        /* Cores de status */
+        .status-em-manutencao {
+            background-color: #fff3cd !important;
+            border-left: 4px solid #ffc107 !important;
+        }
+        
+        .status-reparo-concluido {
+            background-color: #d1e7dd !important;
+            border-left: 4px solid #198754 !important;
+        }
+        
+        .status-descarte {
+            background-color: #f8d7da !important;
+            border-left: 4px solid #dc3545 !important;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            min-width: 300px;
+        }
+        
+        .pagination .page-link {
+            color: #dc3545;
+        }
+        
+        .pagination .page-item.active .page-link {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
+        
+        .pagination .page-link:hover {
+            color: #dc3545;
+            background-color: #f8d7da;
+        }
+        
+        .collapse-icon {
+            transition: transform 0.3s ease;
+        }
+        
+        .card-header[aria-expanded="true"] .collapse-icon {
+            transform: rotate(90deg);
+        }
+        
+        .card-header:hover {
+            background-color: #c82333 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="notification" id="notification" style="display: none;"></div>
+    
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2 class="text-danger mb-0">
+                            <i class="bi bi-tools"></i> Produtos Enviados para Manutenção
+                        </h2>
+                        <p class="text-muted mb-0">Gerencie produtos que precisam de reparo</p>
+                    </div>
+                    <div>
+                        <a href="/painel-admin" class="btn btn-outline-secondary me-2">
+                            <i class="bi bi-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estatísticas -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stats-card danger">
+                    <div class="card-body text-center">
+                        <h3 class="text-danger mb-1" id="totalListas">0</h3>
+                        <p class="text-muted mb-0">Total de Listas</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card info">
+                    <div class="card-body text-center">
+                        <h3 class="text-info mb-1" id="totalProdutos">0</h3>
+                        <p class="text-muted mb-0">Total de Produtos</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card warning">
+                    <div class="card-body text-center">
+                        <h3 class="text-warning mb-1" id="quantidadeTotal">0</h3>
+                        <p class="text-muted mb-0">Quantidade Total</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card success">
+                    <div class="card-body text-center">
+                        <h3 class="text-success mb-1" id="usuariosAtivos">0</h3>
+                        <p class="text-muted mb-0">Usuários Ativos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controles -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <button class="btn btn-outline-danger" id="refreshBtn">
+                            <i class="bi bi-arrow-clockwise"></i> Atualizar
+                        </button>
+                    </div>
+                    <div>
+                        <button class="btn btn-success" onclick="window.location.href='/api/export-manutencao'">
+                            <i class="bi bi-download"></i> Exportar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Listas de Manutenção -->
+        <div class="row">
+            <div class="col-12">
+                <div id="listasContainer">
+                    <!-- Listas serão carregadas aqui via JavaScript -->
+                    <div class="text-center">
+                        <div class="spinner-border text-danger" role="status">
+                            <span class="visually-hidden">Carregando...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Controles de Paginação -->
+                <div class="d-flex justify-content-center mt-4">
+                    <nav id="paginacao" aria-label="Navegação de páginas">
+                        <!-- Paginação será inserida aqui -->
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let paginaAtual = 1;
+        const refreshBtn = document.getElementById('refreshBtn');
+
+        // Função para mostrar notificações
+        function showNotification(message, type = 'info') {
+            const notification = document.getElementById('notification');
+            notification.className = `notification alert alert-${type} alert-dismissible fade show`;
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            notification.style.display = 'block';
+
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 5000);
+        }
+
+        // Função para carregar listas da manutenção
+        function carregarListasManutencao(pagina = 1) {
+            fetch(`/api/produtos-manutencao?pagina=${pagina}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        showNotification(data.error, 'danger');
+                        return;
+                    }
+                    
+                    atualizarEstatisticas(data.estatisticas);
+                    atualizarListasManutencao(data.listas);
+                    atualizarPaginacao(data.paginacao);
+                    paginaAtual = pagina;
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar listas:', error);
+                    showNotification('Erro ao carregar listas', 'danger');
+                });
+        }
+
+        // Função para atualizar estatísticas
+        function atualizarEstatisticas(stats) {
+            document.getElementById('totalListas').textContent = stats.total_listas || 0;
+            document.getElementById('totalProdutos').textContent = stats.total_produtos || 0;
+            document.getElementById('quantidadeTotal').textContent = stats.quantidade_total || 0;
+            document.getElementById('usuariosAtivos').textContent = stats.usuarios_ativos || 0;
+        }
+
+        // Função para atualizar as listas de manutenção
+        function atualizarListasManutencao(listas) {
+            const container = document.getElementById('listasContainer');
+            container.innerHTML = '';
+            
+            if (listas.length === 0) {
+                container.innerHTML = '<div class="alert alert-info text-center">Nenhuma lista encontrada</div>';
+                return;
+            }
+            
+            listas.forEach(lista => {
+                const listaDiv = document.createElement('div');
+                listaDiv.className = 'card mb-4 border-danger';
+                
+                const collapseId = `collapse-${lista.id}`;
+                
+                listaDiv.innerHTML = `
+                    <div class="card-header bg-danger text-white" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#${collapseId}" aria-expanded="false">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">
+                                    <i class="bi bi-chevron-right collapse-icon me-2"></i>
+                                    <i class="bi bi-person-fill"></i> Lista de ${lista.usuario_nome}
+                                    <small class="ms-2 opacity-75">
+                                        <i class="bi bi-box"></i> ${lista.total_produtos} produto(s) | 
+                                        <i class="bi bi-stack"></i> ${lista.quantidade_total} unidade(s)
+                                    </small>
+                                </h6>
+                            </div>
+                            <div>
+                                <small>
+                                    <i class="bi bi-calendar"></i> ${lista.data_envio_formatada}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="collapse" id="${collapseId}">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover mb-0">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>EAN</th>
+                                            <th>Nome</th>
+                                            <th>Cor</th>
+                                            <th>Voltagem</th>
+                                            <th>Modelo</th>
+                                            <th>Qtd</th>
+                                            <th>Motivo</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${lista.produtos.map(produto => {
+                                            const motivoTruncado = produto.motivo_manutencao && produto.motivo_manutencao.length > 30 
+                                                ? produto.motivo_manutencao.substring(0, 30) + '...' 
+                                                : produto.motivo_manutencao || '-';
+                                            
+                                            const motivoCompleto = produto.motivo_manutencao || '';
+                                            
+                                            let statusClass = '';
+                                            switch(produto.status_manutencao) {
+                                                case 'em_manutencao':
+                                                    statusClass = 'status-em-manutencao';
+                                                    break;
+                                                case 'reparo_concluido':
+                                                    statusClass = 'status-reparo-concluido';
+                                                    break;
+                                                case 'descarte':
+                                                    statusClass = 'status-descarte';
+                                                    break;
+                                            }
+                                            
+                                            return `
+                                                <tr class="${statusClass}">
+                                                    <td><code>${produto.ean}</code></td>
+                                                    <td>${produto.nome}</td>
+                                                    <td>${produto.cor || '-'}</td>
+                                                    <td>${produto.voltagem || '-'}</td>
+                                                    <td>${produto.modelo || '-'}</td>
+                                                    <td><span class="badge bg-primary">${produto.quantidade}</span></td>
+                                                    <td title="${motivoCompleto}">${motivoTruncado}</td>
+                                                    <td>
+                                                        <select class="form-select form-select-sm" data-produto-id="${produto.id}">
+                                                            <option value="">Selecionar...</option>
+                                                            <option value="em_manutencao" ${produto.status_manutencao === 'em_manutencao' ? 'selected' : ''}>Em manutenção</option>
+                                                            <option value="reparo_concluido" ${produto.status_manutencao === 'reparo_concluido' ? 'selected' : ''}>Reparo concluído</option>
+                                                            <option value="descarte" ${produto.status_manutencao === 'descarte' ? 'selected' : ''}>Descarte</option>
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                            `;
+                                        }).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(listaDiv);
+            });
+            
+            // Adicionar event listeners para os seletores de status
+            document.querySelectorAll('select[data-produto-id]').forEach(select => {
+                select.addEventListener('change', function() {
+                    const produtoId = this.getAttribute('data-produto-id');
+                    const novoStatus = this.value;
+                    atualizarStatusManutencao(produtoId, novoStatus);
+                });
+            });
+            
+            // Adicionar event listeners para animação do ícone de collapse
+            document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(header => {
+                header.addEventListener('click', function() {
+                    const icon = this.querySelector('.collapse-icon');
+                    const target = document.querySelector(this.getAttribute('data-bs-target'));
+                    
+                    // Aguardar um pouco para a animação do Bootstrap começar
+                    setTimeout(() => {
+                        if (target.classList.contains('show')) {
+                            this.setAttribute('aria-expanded', 'true');
+                        } else {
+                            this.setAttribute('aria-expanded', 'false');
+                        }
+                    }, 50);
+                });
+            });
+        }
+
+        // Função para atualizar paginação
+        function atualizarPaginacao(paginacao) {
+            const nav = document.getElementById('paginacao');
+            nav.innerHTML = '';
+            
+            if (paginacao.total_paginas <= 1) return;
+            
+            const ul = document.createElement('ul');
+            ul.className = 'pagination';
+            
+            // Botão Anterior
+            if (paginacao.pagina_atual > 1) {
+                const li = document.createElement('li');
+                li.className = 'page-item';
+                li.innerHTML = `<a class="page-link" href="#" onclick="carregarListasManutencao(${paginacao.pagina_atual - 1})">Anterior</a>`;
+                ul.appendChild(li);
+            }
+            
+            // Números das páginas
+            for (let i = 1; i <= paginacao.total_paginas; i++) {
+                if (i === 1 || i === paginacao.total_paginas || (i >= paginacao.pagina_atual - 2 && i <= paginacao.pagina_atual + 2)) {
+                    const li = document.createElement('li');
+                    li.className = `page-item ${i === paginacao.pagina_atual ? 'active' : ''}`;
+                    li.innerHTML = `<a class="page-link" href="#" onclick="carregarListasManutencao(${i})">${i}</a>`;
+                    ul.appendChild(li);
+                } else if (i === paginacao.pagina_atual - 3 || i === paginacao.pagina_atual + 3) {
+                    const li = document.createElement('li');
+                    li.className = 'page-item disabled';
+                    li.innerHTML = '<span class="page-link">...</span>';
+                    ul.appendChild(li);
+                }
+            }
+            
+            // Botão Próximo
+            if (paginacao.pagina_atual < paginacao.total_paginas) {
+                const li = document.createElement('li');
+                li.className = 'page-item';
+                li.innerHTML = `<a class="page-link" href="#" onclick="carregarListasManutencao(${paginacao.pagina_atual + 1})">Próximo</a>`;
+                ul.appendChild(li);
+            }
+            
+            nav.appendChild(ul);
+        }
+
+        // Função para atualizar status de manutenção
+        function atualizarStatusManutencao(produtoId, novoStatus) {
+            // Encontrar a linha do produto
+            const selector = document.querySelector(`select[data-produto-id="${produtoId}"]`);
+            const row = selector.closest('tr');
+            
+            fetch('/api/atualizar-status-manutencao', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    produto_id: produtoId,
+                    status: novoStatus
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Aplicar nova cor à linha imediatamente
+                    aplicarCorStatus(row, novoStatus);
+                    showNotification('Status atualizado com sucesso!', 'success');
+                } else {
+                    showNotification(data.error || 'Erro ao atualizar status', 'danger');
+                    // Recarregar para reverter a mudança visual
+                    carregarListasManutencao(paginaAtual);
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                showNotification('Erro ao atualizar status', 'danger');
+                // Recarregar para reverter a mudança visual
+                carregarListasManutencao(paginaAtual);
+            });
+        }
+        
+        // Função para aplicar cor baseada no status
+        function aplicarCorStatus(row, status) {
+            // Remover todas as classes de status
+            row.classList.remove('status-em-manutencao', 'status-reparo-concluido', 'status-descarte');
+            
+            // Aplicar nova classe baseada no status
+            switch(status) {
+                case 'em_manutencao':
+                    row.classList.add('status-em-manutencao');
+                    break;
+                case 'reparo_concluido':
+                    row.classList.add('status-reparo-concluido');
+                    break;
+                case 'descarte':
+                    row.classList.add('status-descarte');
+                    break;
+                default:
+                    // Status em branco - sem cor especial
+                    break;
+            }
+        }
+
+        // Event listeners
+        refreshBtn.addEventListener('click', function() {
+            carregarListasManutencao(paginaAtual);
+        });
+
+        // Carregar dados iniciais
+        document.addEventListener('DOMContentLoaded', function() {
+            carregarListasManutencao();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Produtos por EAN</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+        .navbar {
+            margin-bottom: 20px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .alert {
+            margin-bottom: 20px;
+        }
+        .table th, .table td {
+            vertical-align: middle;
+        }
+        .btn-action {
+            margin-right: 5px;
+        }
+        #notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: none;
+        }
+        #totalQuantidade {
+            background-color: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+            font-size: 1.1rem;
+            margin-top: 15px;
+        }
+        
+        /* Estilos para destinos */
+        .destino-mercado-livre {
+            background-color: #ffc107 !important;
+            color: #000 !important;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        
+        .destino-loja {
+            background-color: #007bff !important;
+            color: #fff !important;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        
+        .destino-manutencao {
+            background-color: #dc3545 !important;
+            color: #fff !important;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        
+        /* Estilos para busca por modelo */
+        .produto-encontrado {
+            transition: all 0.3s ease;
+            border: 1px solid #dee2e6;
+        }
+        
+        /* Estilos para busca por nome */
+        #area-resultados-busca {
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            background-color: #fff;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+        
+        .produtos-encontrados-header {
+            background: linear-gradient(135deg, #17a2b8, #20c997);
+            color: white;
+            padding: 12px 20px;
+            font-weight: 500;
+        }
+        
+        .produtos-encontrados-body {
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .produto-card {
+            margin-bottom: 15px;
+        }
+        
+        .produto-card-inner {
+            border: 2px solid #007bff;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: #fff;
+            height: 100%;
+        }
+        
+        .produto-card-inner:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .produto-nome {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            line-height: 1.3;
+        }
+        
+        .produto-ean {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .produto-info {
+            color: #666;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+        
+        .produto-stats {
+            color: #999;
+            font-size: 0.8rem;
+            font-style: italic;
+        }
+        
+        .resultado-vazio {
+            padding: 40px 20px;
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+        }
+        
+        .produto-encontrado:hover {
+            background-color: #f8f9fa;
+            cursor: pointer;
+            border-color: #007bff;
+        }
+        
+        .produto-card {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background-color: #fff;
+        }
+        
+        .produto-info {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .produto-nome {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        #area-resultados-busca {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            background-color: #fff;
+            margin-top: 10px;
+        }
+        
+        .resultado-vazio {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-style: italic;
+        }
+        
+        /* Estilos para o gerador de etiquetas */
+        .etiqueta-preview {
+            width: 270px;
+            height: 87px;
+            border: 2px dashed #000;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 3px;
+            margin: 10px auto;
+            position: relative;
+        }
+        
+        .barcode-area {
+            height: 54px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1px;
+        }
+        
+        .descricao-area {
+            height: 24px;
+            width: 100%;
+            text-align: center;
+            overflow: hidden;
+            font-size: 8px;
+            line-height: 1.2;
+            margin-top: 2px;
+        }
+        
+        /* Modal para geração de etiquetas */
+        .modal-etiqueta .modal-dialog {
+            max-width: 600px;
+        }
+        
+        .etiqueta-brother-ql800 {
+            width: 90mm;
+            height: 29mm;
+            border: 1px dashed #000;
+            padding: 1mm;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: white;
+            position: relative;
+        }
+        
+        @media print {
+            @page {
+                size: 90mm 29mm;
+                margin: 0;
+                padding: 0;
+            }
+            
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .etiqueta-brother-ql800 {
+                border: 1px dashed #000 !important;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">Sistema de Cadastro de Produtos</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <span class="nav-link">Olá, {{ session.usuario_nome }}</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Sair</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div id="notification" class="alert alert-dismissible fade show">
+            <span id="notification-message"></span>
+            <button type="button" class="btn-close" onclick="hideNotification()"></button>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">Adicionar Novo Produto</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="productForm">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="ean" class="form-label">EAN (Código de Barras)*</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="ean" name="ean" required>
+                                            <button type="button" class="btn btn-outline-secondary" id="searchBtn">Buscar</button>
+                                            <button type="button" class="btn btn-outline-primary" id="printLabelBtn" title="Gerar Etiqueta EAN">
+                                                <i class="bi bi-printer"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="nome" class="form-label">Nome do Produto*</label>
+                                        <input type="text" class="form-control" id="nome" name="nome" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="cor" class="form-label">Cor</label>
+                                        <input type="text" class="form-control" id="cor" name="cor">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="voltagem" class="form-label">Voltagem</label>
+                                        <input type="text" class="form-control" id="voltagem" name="voltagem">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="modelo" class="form-label">Modelo</label>
+                                        <input type="text" class="form-control" id="modelo" name="modelo">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Seção de Busca por Nome -->
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="mb-3">
+                                        <label for="nome-busca" class="form-label">Buscar Produtos por Nome</label>
+                                        <input type="text" class="form-control" id="nome-busca" placeholder="Digite pelo menos 3 caracteres do nome do produto para buscar produtos similares">
+                                        <small class="form-text text-muted">Digite o nome do produto para buscar produtos já cadastrados no sistema</small>
+                                    </div>
+                                    
+                                    <!-- Área de resultados da busca -->
+                                    <div id="area-resultados-busca" style="display: none;">
+                                        <div class="produtos-encontrados-header">
+                                            <h5 class="mb-0">Produtos Encontrados</h5>
+                                        </div>
+                                        <div class="produtos-encontrados-body">
+                                            <div id="resultados-busca" class="row">
+                                                <!-- Resultados serão inseridos aqui via JavaScript -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="quantidade" class="form-label">Quantidade*</label>
+                                        <input type="number" class="form-control" id="quantidade" name="quantidade" min="1" value="1" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Destino*</label>
+                                        <div class="btn-group" role="group" aria-label="Destino do Produto">
+                                            <input type="radio" class="btn-check" name="destino" id="destinoMercadoLivre" value="mercado_livre" autocomplete="off" checked>
+                                            <label class="btn btn-outline-warning" for="destinoMercadoLivre">Mercado Livre</label>
+
+                                            <input type="radio" class="btn-check" name="destino" id="destinoLoja" value="loja" autocomplete="off">
+                                            <label class="btn btn-outline-primary" for="destinoLoja">Loja</label>
+
+                                            <input type="radio" class="btn-check" name="destino" id="destinoManutencao" value="manutencao" autocomplete="off">
+                                            <label class="btn btn-outline-danger" for="destinoManutencao">Manutenção</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 d-flex align-items-end">
+                                    <button type="submit" class="btn btn-primary" id="addProductBtn">Adicionar Produto</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Campo de motivo de manutenção (oculto por padrão) -->
+                            <div class="row" id="motivoManutencaoRow" style="display: none;">
+                                <div class="col-md-12">
+                                    <div class="mb-3">
+                                        <label for="motivoManutencao" class="form-label">Motivo da Manutenção*</label>
+                                        <textarea class="form-control" id="motivoManutencao" name="motivo_manutencao" rows="3" 
+                                                placeholder="Descreva o motivo pelo qual este produto está sendo enviado para manutenção (mínimo 10 caracteres)"></textarea>
+                                        <small class="form-text text-muted">Este campo é obrigatório quando o destino for Manutenção</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">Produtos Cadastrados</h5>
+                        <div>
+                            <button id="enviarListaBtn" class="btn btn-success btn-sm me-2">
+                                📤 Enviar Lista
+                            </button>
+                            <button id="exportBtn" class="btn btn-light btn-sm">Exportar para Excel</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>EAN</th>
+                                        <th>Nome</th>
+                                        <th>Cor</th>
+                                        <th>Voltagem</th>
+                                        <th>Modelo</th>
+                                        <th>Quantidade</th>
+                                        <th>Destino</th>
+                                        <th>Motivo</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="productList">
+                                    <tr id="empty-row">
+                                        <td colspan="9" class="text-center">Nenhum produto cadastrado</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Somatória total -->
+                        <div id="totalQuantidade" class="text-end">
+                            Total de Produtos: 0
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmação de Envio -->
+    <div class="modal fade" id="confirmEnvioModal" tabindex="-1" aria-labelledby="confirmEnvioModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmEnvioModalLabel">Confirmar Envio da Lista</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Selecione o responsável e digite o PIN para confirmar o envio da lista:</p>
+                    <div class="mb-3">
+                        <label for="responsavel" class="form-label">Responsável</label>
+                        <select class="form-select" id="responsavel" required>
+                            <option value="">Selecione o responsável</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="pin" class="form-label">PIN</label>
+                        <input type="password" class="form-control" id="pin" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="confirmarEnvioBtn">Confirmar Envio</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Geração de Etiquetas -->
+    <div class="modal fade modal-etiqueta" id="etiquetaModal" tabindex="-1" aria-labelledby="etiquetaModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="etiquetaModalLabel">Gerar Etiqueta de Código de Barras</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="etiqueta-codigo" class="form-label">Código de Barras</label>
+                                <input type="text" class="form-control" id="etiqueta-codigo" readonly>
+                                <small class="text-muted" id="formato-detectado"></small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="etiqueta-formato" class="form-label">Formato do Código</label>
+                                <select class="form-select" id="etiqueta-formato">
+                                    <option value="auto">Detectar Automaticamente</option>
+                                    <option value="EAN13">EAN-13 (13 dígitos)</option>
+                                    <option value="UPC">UPC-A (12 dígitos)</option>
+                                </select>
+                                <small class="text-muted">
+                                    EAN-13: Padrão internacional (Brasil, Europa, Ásia)  
+
+                                    UPC-A: Padrão EUA/Canadá
+                                </small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="etiqueta-descricao" class="form-label">Descrição do Produto</label>
+                                <input type="text" class="form-control" id="etiqueta-descricao" readonly>
+                            </div>
+                            <button type="button" class="btn btn-primary" id="gerarEtiquetaBtn">
+                                <i class="bi bi-upc-scan"></i> Gerar Etiqueta
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-center">
+                                <h6>Preview da Etiqueta</h6>
+                                <div class="alert alert-info" id="info-formato" style="display: none; font-size: 0.85rem;">
+                                    <strong id="formato-nome"></strong>  
+
+                                    <span id="formato-descricao"></span>
+                                </div>
+                                <div class="etiqueta-preview" id="etiqueta-preview">
+                                    <div class="barcode-area">
+                                        <svg id="barcode-svg"></svg>
+                                    </div>
+                                    <div class="descricao-area" id="descricao-preview"></div>
+                                </div>
+                                <button type="button" class="btn btn-success" id="imprimirEtiquetaBtn" style="display: none;">
+                                    <i class="bi bi-printer"></i> Imprimir Etiqueta
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elementos do DOM
+            const productForm = document.getElementById('productForm');
+            const addProductBtn = document.getElementById('addProductBtn');
+            const searchBtn = document.getElementById('searchBtn');
+            const printLabelBtn = document.getElementById('printLabelBtn');
+            const exportBtn = document.getElementById('exportBtn');
+            const enviarListaBtn = document.getElementById('enviarListaBtn');
+            const productList = document.getElementById('productList');
+            const confirmEnvioModal = new bootstrap.Modal(document.getElementById('confirmEnvioModal'));
+            const etiquetaModal = new bootstrap.Modal(document.getElementById('etiquetaModal'));
+            const responsavelSelect = document.getElementById('responsavel');
+            const pinInput = document.getElementById('pin');
+            const confirmarEnvioBtn = document.getElementById('confirmarEnvioBtn');
+            const gerarEtiquetaBtn = document.getElementById('gerarEtiquetaBtn');
+            const imprimirEtiquetaBtn = document.getElementById('imprimirEtiquetaBtn');
+            
+            // Variável para controlar se uma requisição está em andamento
+            let isSubmitting = false;
+            
+            // CORREÇÃO: Variável para controlar se o submit foi iniciado pelo usuário
+            let submitIniciadoPeloUsuario = false;
+            
+            // CORREÇÃO: Event listener para o botão "Adicionar Produto"
+            addProductBtn.addEventListener('click', function(e) {
+                console.log('Clique no botão Adicionar Produto detectado');
+                submitIniciadoPeloUsuario = true;
+            });
+            
+            // Event listeners para os botões de destino
+            const destinoRadios = document.querySelectorAll('input[name="destino"]');
+            const motivoManutencaoRow = document.getElementById('motivoManutencaoRow');
+            const motivoManutencaoField = document.getElementById('motivoManutencao');
+            
+            destinoRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.value === 'manutencao') {
+                        motivoManutencaoRow.style.display = 'block';
+                        motivoManutencaoField.required = true;
+                    } else {
+                        motivoManutencaoRow.style.display = 'none';
+                        motivoManutencaoField.required = false;
+                        motivoManutencaoField.value = ''; // Limpar o campo quando não for manutenção
+                    }
+                });
+            });
+            
+            // CORREÇÃO: Impedir submit automático via Enter
+            productForm.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    console.log('Enter pressionado - verificando se deve submeter');
+                    // Só permite Enter se o usuário clicou no botão recentemente
+                    if (!submitIniciadoPeloUsuario) {
+                        console.log('Enter bloqueado - usuário não clicou no botão');
+                        e.preventDefault();
+                        e.stopPropagation();
+                        showNotification('Use o botão "Adicionar Produto" para adicionar itens à lista.', 'warning');
+                        return false;
+                    }
+                }
+            });
+            
+            // Carregar responsáveis para o dropdown
+            function carregarResponsaveis() {
+                fetch('/api/responsaveis')
+                    .then(response => response.json())
+                    .then(data => {
+                        // Limpar opções existentes
+                        responsavelSelect.innerHTML = '<option value="">Selecione o responsável</option>';
+                        
+                        // Adicionar novas opções
+                        data.forEach(responsavel => {
+                            const option = document.createElement('option');
+                            option.value = responsavel.id;
+                            option.textContent = responsavel.nome;
+                            responsavelSelect.appendChild(option);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Erro ao carregar responsáveis:', error);
+                        showNotification('Erro ao carregar responsáveis', 'danger');
+                    });
+            }
+            
+            // Carregar responsáveis ao inicializar
+            carregarResponsaveis();
+
+            // Função para mostrar notificações
+            function showNotification(message, type) {
+                const notification = document.getElementById('notification');
+                const notificationMessage = document.getElementById('notification-message');
+                
+                notification.className = `alert alert-${type} alert-dismissible fade show`;
+                notificationMessage.textContent = message;
+                notification.style.display = 'block';
+                
+                setTimeout(() => {
+                    hideNotification();
+                }, 5000);
+            }
+
+            // Função para esconder notificações
+            function hideNotification() {
+                const notification = document.getElementById('notification');
+                notification.style.display = 'none';
+            }
+
+            // Buscar produto por EAN
+            searchBtn.addEventListener('click', function() {
+                const ean = document.getElementById('ean').value.trim();
+                if (!ean) {
+                    showNotification('Digite um EAN para buscar', 'warning');
+                    return;
+                }
+
+                fetch('/api/buscar-por-nome', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ nome: ean })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.produtos && data.produtos.length > 0) {
+                        const produto = data.produtos[0];
+                        document.getElementById('nome').value = produto.nome || '';
+                        document.getElementById('cor').value = produto.cor || '';
+                        document.getElementById('voltagem').value = produto.voltagem || '';
+                        document.getElementById('modelo').value = produto.modelo || '';
+                        showNotification('Produto encontrado!', 'success');
+                    } else {
+                        showNotification('Produto não encontrado', 'warning');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar produto:', error);
+                    showNotification('Erro ao buscar produto', 'danger');
+                });
+            });
+
+            // Event listener para o botão de impressora
+            printLabelBtn.addEventListener('click', function() {
+                const codigo = document.getElementById('ean').value.trim();
+                const nome = document.getElementById('nome').value.trim();
+                
+                if (!codigo || !nome) {
+                    showNotification('Preencha o código e o nome do produto para gerar a etiqueta', 'warning');
+                    return;
+                }
+                
+                // Validar tamanho do código (12 ou 13 dígitos)
+                const codigoLimpo = codigo.replace(/\D/g, '');
+                if (codigoLimpo.length !== 12 && codigoLimpo.length !== 13) {
+                    showNotification('O código deve ter 12 (UPC-A) ou 13 (EAN-13) dígitos', 'warning');
+                    return;
+                }
+                
+                // Detectar formato automaticamente
+                const deteccao = detectarFormatoBarcode(codigoLimpo);
+                
+                // Preencher dados no modal
+                document.getElementById('etiqueta-codigo').value = codigoLimpo;
+                document.getElementById('etiqueta-descricao').value = nome;
+                document.getElementById('etiqueta-formato').value = 'auto';
+                
+                // Mostrar informação do formato detectado
+                document.getElementById('formato-detectado').textContent = deteccao.mensagem;
+                document.getElementById('formato-detectado').className = deteccao.valido ? 'text-success' : 'text-danger';
+                
+                // Resetar preview
+                document.getElementById('barcode-svg').innerHTML = '';
+                document.getElementById('descricao-preview').textContent = '';
+                document.getElementById('imprimirEtiquetaBtn').style.display = 'none';
+                document.getElementById('info-formato').style.display = 'none';
+                
+                // Mostrar modal
+                etiquetaModal.show();
+            });
+                    // ============================================================
+        // FUNÇÕES PARA SUPORTE A EAN-13 E UPC-A
+        // ============================================================
+        
+        /**
+         * Detecta automaticamente o formato do código de barras
+         */
+        function detectarFormatoBarcode(codigo) {
+            codigo = codigo.replace(/\D/g, '');
+            
+            if (codigo.length === 12) {
+                const valido = validarUPCA(codigo);
+                return {
+                    formato: 'UPC',
+                    valido: valido,
+                    mensagem: valido ? 'UPC-A válido (12 dígitos)' : 'UPC-A inválido',
+                    descricao: 'Padrão norte-americano (EUA/Canadá)'
+                };
+            } else if (codigo.length === 13) {
+                if (codigo.startsWith('0')) {
+                    const codigoUPC = codigo.substring(1);
+                    const validoUPC = validarUPCA(codigoUPC);
+                    const validoEAN = validateEAN13(codigo);
+                    
+                    return {
+                        formato: 'UPC',
+                        formatoAlternativo: 'EAN13',
+                        valido: validoUPC || validoEAN,
+                        mensagem: validoUPC ? 'UPC-A válido (compatível com EAN-13)' : 'EAN-13 válido',
+                        descricao: 'Compatível com UPC-A e EAN-13'
+                    };
+                } else {
+                    const valido = validateEAN13(codigo);
+                    return {
+                        formato: 'EAN13',
+                        valido: valido,
+                        mensagem: valido ? 'EAN-13 válido (13 dígitos)' : 'EAN-13 inválido',
+                        descricao: 'Padrão internacional (Brasil, Europa, Ásia)'
+                    };
+                }
+            } else {
+                return {
+                    formato: null,
+                    valido: false,
+                    mensagem: `Código inválido: deve ter 12 (UPC-A) ou 13 (EAN-13) dígitos (atual: ${codigo.length})`,
+                    descricao: ''
+                };
+            }
+        }
+        
+        /**
+         * Valida código UPC-A
+         */
+        function validarUPCA(codigo) {
+            if (!/^\d{12}$/.test(codigo)) return false;
+            
+            const digits = codigo.split('').map(Number);
+            const checksum = digits.pop();
+            
+            let sum = 0;
+            for (let i = 0; i < 11; i++) {
+                sum += digits[i] * (i % 2 === 0 ? 3 : 1);
+            }
+            
+            const calculatedChecksum = (10 - (sum % 10)) % 10;
+            return checksum === calculatedChecksum;
+        }
+        
+        /**
+         * Converte UPC-A para EAN-13
+         */
+        function upcParaEAN13(codigoUPC) {
+            return '0' + codigoUPC;
+        }
+        
+        /**
+         * Converte EAN-13 para UPC-A
+         */
+        function ean13ParaUPC(codigoEAN) {
+            if (codigoEAN.length === 13 && codigoEAN.startsWith('0')) {
+                return codigoEAN.substring(1);
+            }
+            return null;
+        }
+        
+        /**
+         * Prepara código para geração baseado no formato selecionado
+         */
+        function prepararCodigoParaGeracao(codigo, formatoSelecionado) {
+            codigo = codigo.replace(/\D/g, '');
+            
+            if (formatoSelecionado === 'auto') {
+                const deteccao = detectarFormatoBarcode(codigo);
+                return {
+                    codigo: codigo,
+                    formato: deteccao.formato,
+                    valido: deteccao.valido,
+                    mensagem: deteccao.mensagem,
+                    descricao: deteccao.descricao
+                };
+            } else if (formatoSelecionado === 'EAN13') {
+                if (codigo.length === 12) {
+                    codigo = upcParaEAN13(codigo);
+                }
+                const valido = validateEAN13(codigo);
+                return {
+                    codigo: codigo,
+                    formato: 'EAN13',
+                    valido: valido,
+                    mensagem: valido ? 'EAN-13 válido' : 'EAN-13 inválido',
+                    descricao: 'Padrão internacional (13 dígitos)'
+                };
+            } else if (formatoSelecionado === 'UPC') {
+                if (codigo.length === 13 && codigo.startsWith('0')) {
+                    codigo = ean13ParaUPC(codigo);
+                }
+                if (codigo.length !== 12) {
+                    return {
+                        codigo: codigo,
+                        formato: 'UPC',
+                        valido: false,
+                        mensagem: 'UPC-A deve ter 12 dígitos',
+                        descricao: 'Padrão norte-americano'
+                    };
+                }
+                const valido = validarUPCA(codigo);
+                return {
+                    codigo: codigo,
+                    formato: 'UPC',
+                    valido: valido,
+                    mensagem: valido ? 'UPC-A válido' : 'UPC-A inválido',
+                    descricao: 'Padrão norte-americano (12 dígitos)'
+                };
+            }
+            
+            return {
+                codigo: codigo,
+                formato: null,
+                valido: false,
+                mensagem: 'Formato desconhecido',
+                descricao: ''
+            };
+        }
+            // Event listener para o botão de impressora
+            printLabelBtn.addEventListener('click', function() {
+                const ean = document.getElementById('ean').value.trim();
+                const nome = document.getElementById('nome').value.trim();
+                
+                if (!ean || !nome) {
+                    showNotification('Preencha o EAN e o nome do produto para gerar a etiqueta', 'warning');
+                    return;
+                }
+                
+                if (ean.length !== 13) {
+                    showNotification('O EAN deve ter exatamente 13 dígitos', 'warning');
+                    return;
+                }
+                
+                // Preencher dados no modal
+                document.getElementById('etiqueta-ean').value = ean;
+                document.getElementById('etiqueta-descricao').value = nome;
+                
+                // Mostrar modal
+                etiquetaModal.show();
+            });
+
+            // Função para validar EAN-13
+            function validateEAN13(code) {
+                if (!/^\d{13}$/.test(code)) return false;
+                
+                const digits = code.split('').map(Number);
+                const checksum = digits.pop();
+                
+                let sum = 0;
+                for (let i = 0; i < 12; i++) {
+                    sum += digits[i] * (i % 2 === 0 ? 1 : 3);
+                }
+                
+                const calculatedChecksum = (10 - (sum % 10)) % 10;
+                return calculatedChecksum === checksum;
+            }
+
+            // Event listener para gerar etiqueta
+            gerarEtiquetaBtn.addEventListener('click', function() {
+                const codigoOriginal = document.getElementById('etiqueta-codigo').value;
+                const descricao = document.getElementById('etiqueta-descricao').value;
+                const formatoSelecionado = document.getElementById('etiqueta-formato').value;
+                
+                // Preparar código baseado no formato selecionado
+                const resultado = prepararCodigoParaGeracao(codigoOriginal, formatoSelecionado);
+                
+                // Validar
+                if (!resultado.valido) {
+                    showNotification(resultado.mensagem, 'danger');
+                    return;
+                }
+                
+                try {
+                    // Gerar código de barras com o formato correto
+                    JsBarcode("#barcode-svg", resultado.codigo, {
+                        format: resultado.formato,
+                        width: 2,
+                        height: 60,
+                        displayValue: true,
+                        fontSize: 12,
+                        margin: 0
+                    });
+                    
+                    // Mostrar descrição (truncada em 60 caracteres)
+                    document.getElementById('descricao-preview').textContent = 
+                        descricao.length > 60 ? descricao.substring(0, 60) + '...' : descricao;
+                    
+                    // Mostrar informações do formato
+                    document.getElementById('formato-nome').textContent = 
+                        resultado.formato === 'EAN13' ? 'EAN-13' : 'UPC-A';
+                    document.getElementById('formato-descricao').textContent = resultado.descricao;
+                    document.getElementById('info-formato').style.display = 'block';
+                    
+                    // Atualizar mensagem de formato detectado
+                    document.getElementById('formato-detectado').textContent = resultado.mensagem;
+                    document.getElementById('formato-detectado').className = 'text-success';
+                    
+                    // Mostrar botão de imprimir
+                    imprimirEtiquetaBtn.style.display = 'block';
+                    
+                    showNotification(`Etiqueta ${resultado.formato === 'EAN13' ? 'EAN-13' : 'UPC-A'} gerada com sucesso!`, 'success');
+                    
+                } catch (error) {
+                    showNotification('Erro ao gerar código de barras: ' + error.message, 'danger');
+                }
+            });
+
+                        // Event listener para imprimir etiqueta
+                imprimirEtiquetaBtn.addEventListener('click', function() {
+                const codigo = document.getElementById('etiqueta-codigo').value;
+                const descricao = document.getElementById('etiqueta-descricao').value;
+                const formatoSelecionado = document.getElementById('etiqueta-formato').value;
+                
+                // Preparar código
+                const resultado = prepararCodigoParaGeracao(codigo, formatoSelecionado);
+                
+                const printWindow = window.open('', '_blank');
+                
+                // Criar HTML otimizado para Brother QL-800
+                const barcodeHTML = document.getElementById('barcode-svg').outerHTML;
+                const formatoNome = resultado.formato === 'EAN13' ? 'EAN-13' : 'UPC-A';
+                
+                printWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                        <head>
+                            <title>Etiqueta ${formatoNome} - Brother QL-800</title>
+                            <style>
+                                @page {
+                                    size: 90mm 29mm;
+                                    margin: 0;
+                                    padding: 0;
+                                }
+                                
+                                * {
+                                    margin: 0;
+                                    padding: 0;
+                                    box-sizing: border-box;
+                                }
+                                
+                                body {
+                                    margin: 0;
+                                    padding: 0;
+                                    font-family: Arial, sans-serif;
+                                    background: white;
+                                }
+                                
+                                .etiqueta-brother-ql800 {
+                                    width: 90mm;
+                                    height: 29mm;
+                                    border: 1px dashed #000;
+                                    padding: 1mm;
+                                    display: flex;
+                                    flex-direction: column;
+                                    justify-content: center;
+                                    align-items: center;
+                                    background: white;
+                                    position: relative;
+                                }
+                                
+                                .barcode-area {
+                                    display: flex;
+                                    justify-content: center;
+                                    align-items: center;
+                                    margin-bottom: 1mm;
+                                    height: 18mm;
+                                }
+                                
+                                .barcode-area svg {
+                                    max-width: 85mm;
+                                    max-height: 16mm;
+                                }
+                                
+                                .descricao-area {
+                                    width: 100%;
+                                    height: 8mm;
+                                    display: flex;
+                                    justify-content: center;
+                                    align-items: center;
+                                    text-align: center;
+                                    overflow: hidden;
+                                }
+                                
+                                .descricao-linha {
+                                    font-size: 8px;
+                                    line-height: 1.2;
+                                    max-width: 85mm;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    white-space: nowrap;
+                                }
+                                
+                                @media print {
+                                    body {
+                                        -webkit-print-color-adjust: exact;
+                                        print-color-adjust: exact;
+                                    }
+                                    
+                                    .etiqueta-brother-ql800 {
+                                        border: 1px dashed #000 !important;
+                                        page-break-inside: avoid;
+                                    }
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="etiqueta-brother-ql800">
+                                <div class="barcode-area">
+                                    ${barcodeHTML}
+                                </div>
+                                <div class="descricao-area">
+                                    <div class="descricao-linha">${descricao}</div>
+                                </div>
+                            </div>
+                        </body>
+                    </html>
+                `);
+                
+                printWindow.document.close();
+                
+                // Aguardar carregamento e imprimir
+                setTimeout(() => {
+                    printWindow.print();
+                }, 500);
+                
+                showNotification(`Etiqueta ${formatoNome} enviada para impressão!`, 'success');
+            });
+
+            // NOVA FUNCIONALIDADE: Busca automática de EAN
+            let searchTimeout;
+            const eanInput = document.getElementById('ean');
+            
+            eanInput.addEventListener('input', function() {
+                const ean = this.value.trim();
+                
+                // Limpar timeout anterior
+                clearTimeout(searchTimeout);
+                
+                // Se EAN tem pelo menos 8 dígitos, fazer busca automática
+                if (ean.length >= 8) {
+                    searchTimeout = setTimeout(() => {
+                        console.log('Fazendo busca automática para EAN:', ean);
+                        
+                        fetch(`/api/buscar-produto?ean=${ean}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.nome) {
+                                    document.getElementById('nome').value = data.nome;
+                                    document.getElementById('cor').value = data.cor || '';
+                                    document.getElementById('voltagem').value = data.voltagem || '';
+                                    document.getElementById('modelo').value = data.modelo || '';
+                                    showNotification('Produto encontrado automaticamente!', 'success');
+                                }
+                                // Não mostrar mensagem de "não encontrado" na busca automática
+                                // para não incomodar durante a digitação
+                            })
+                            .catch(error => {
+                                console.error('Erro na busca automática:', error);
+                                // Não mostrar erro na busca automática
+                            });
+                    }, 500); // Delay de 500ms após parar de digitar
+                }
+            });
+
+            // Busca automática também no evento 'change' (para scanners que não disparam 'input')
+            eanInput.addEventListener('change', function() {
+                const ean = this.value.trim();
+                
+                if (ean.length >= 8) {
+                    console.log('Fazendo busca automática (change) para EAN:', ean);
+                    
+                    fetch(`/api/buscar-produto?ean=${ean}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.nome) {
+                                document.getElementById('nome').value = data.nome;
+                                document.getElementById('cor').value = data.cor || '';
+                                document.getElementById('voltagem').value = data.voltagem || '';
+                                document.getElementById('modelo').value = data.modelo || '';
+                                showNotification('Produto encontrado automaticamente!', 'success');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Erro na busca automática (change):', error);
+                        });
+                }
+            });
+
+            // Adicionar produto
+            productForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                console.log('Submit do formulário detectado');
+                
+                // CORREÇÃO: Verificar se o submit foi iniciado pelo usuário
+                if (!submitIniciadoPeloUsuario) {
+                    console.log('Submit bloqueado - não foi iniciado pelo usuário');
+                    showNotification('Use o botão "Adicionar Produto" para adicionar itens à lista.', 'warning');
+                    return false;
+                }
+                
+                // Resetar a flag após verificação
+                submitIniciadoPeloUsuario = false;
+                console.log('Submit autorizado - prosseguindo');
+                
+                if (isSubmitting) {
+                    return;
+                }
+                
+                isSubmitting = true;
+                addProductBtn.disabled = true;
+                addProductBtn.textContent = 'Adicionando...';
+
+                const formData = new FormData(productForm);
+                const productData = Object.fromEntries(formData);
+                // Obter o valor do destino selecionado pelos botões de rádio
+                const destinoSelecionado = document.querySelector('input[name="destino"]:checked').value;
+                productData.destino = destinoSelecionado;
+
+                fetch('/api/produtos', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(productData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        showNotification(data.error, 'danger');
+                    } else {
+                        showNotification('Produto adicionado com sucesso!', 'success');
+                        
+                        // CORREÇÃO: Limpeza completa do formulário
+                        productForm.reset();
+                        
+                        // Limpar todos os campos específicos
+                        document.getElementById('ean').value = '';
+                        document.getElementById('nome').value = '';
+                        document.getElementById('cor').value = '';
+                        document.getElementById('voltagem').value = '';
+                        document.getElementById('modelo').value = '';
+                        document.getElementById('quantidade').value = '1';
+                        
+                        // Resetar o campo de motivo de manutenção
+                        document.getElementById('motivoManutencao').value = '';
+                        document.getElementById('motivoManutencaoRow').style.display = 'none';
+                        document.getElementById('motivoManutencao').required = false;
+                        
+                        // Marcar Mercado Livre como padrão
+                        document.getElementById('destinoMercadoLivre').checked = true;
+                        
+                        // Focar no campo EAN para próxima entrada
+                        document.getElementById('ean').focus();
+                        
+                        loadProducts();
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    showNotification('Erro ao adicionar produto', 'danger');
+                })
+                .finally(() => {
+                    isSubmitting = false;
+                    addProductBtn.disabled = false;
+                    addProductBtn.textContent = 'Adicionar Produto';
+                });
+            });
+
+            // Carregar produtos
+            function loadProducts() {
+                fetch('/api/produtos')
+                    .then(response => response.json())
+                    .then(produtos => {
+                        updateProductList(produtos);
+                    })
+                    .catch(error => {
+                        console.error('Erro:', error);
+                        showNotification('Erro ao carregar produtos', 'danger');
+                    });
+            }
+
+            // Exportar para Excel
+            exportBtn.addEventListener('click', function() {
+                window.location.href = '/api/export';
+            });
+            
+            // Event listener para botão único de enviar lista
+            enviarListaBtn.addEventListener('click', function() {
+                // Verificar se há produtos na lista
+                if (document.getElementById('empty-row')) {
+                    showNotification('Não há produtos para enviar', 'warning');
+                    return;
+                }
+                
+                // Buscar produtos e agrupar por destino
+                fetch('/api/produtos')
+                    .then(response => response.json())
+                    .then(produtos => {
+                        if (produtos.length === 0) {
+                            showNotification('Não há produtos para enviar', 'warning');
+                            return;
+                        }
+                        
+                        // Agrupar produtos por destino
+                        const produtosPorDestino = {
+                            'mercado_livre': produtos.filter(p => p.destino === 'mercado_livre'),
+                            'loja': produtos.filter(p => p.destino === 'loja'),
+                            'manutencao': produtos.filter(p => p.destino === 'manutencao')
+                        };
+                        
+                        // Criar resumo para confirmação
+                        let resumo = 'Produtos serão enviados para:\n\n';
+                        let temProdutos = false;
+                        
+                        if (produtosPorDestino.mercado_livre.length > 0) {
+                            resumo += `🟡 Mercado Livre: ${produtosPorDestino.mercado_livre.length} produto(s)\n`;
+                            temProdutos = true;
+                        }
+                        
+                        if (produtosPorDestino.loja.length > 0) {
+                            resumo += `🔵 Loja: ${produtosPorDestino.loja.length} produto(s)\n`;
+                            temProdutos = true;
+                        }
+                        
+                        if (produtosPorDestino.manutencao.length > 0) {
+                            resumo += `🔴 Manutenção: ${produtosPorDestino.manutencao.length} produto(s)\n`;
+                            temProdutos = true;
+                        }
+                        
+                        if (!temProdutos) {
+                            showNotification('Não há produtos válidos para enviar', 'warning');
+                            return;
+                        }
+                        
+                        resumo += '\nDeseja continuar?';
+                        
+                        // Confirmar envio
+                        if (confirm(resumo)) {
+                            // Limpar campos do modal
+                            document.getElementById('responsavel').value = '';
+                            document.getElementById('pin').value = '';
+                            
+                            // Mostrar modal de confirmação
+                            confirmEnvioModal.show();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao verificar produtos:', error);
+                        showNotification('Erro ao verificar produtos', 'danger');
+                    });
+            });
+            
+            // Carregar a somatória inicial quando a página carrega
+            fetch('/api/produtos')
+                .then(response => response.json())
+                .then(produtos => {
+                    // Calcular somatória inicial
+                    let totalInicial = 0;
+                    produtos.forEach(produto => {
+                        totalInicial += parseInt(produto.quantidade || 0);
+                    });
+                    
+                    // Atualizar display da somatória
+                    document.getElementById('totalQuantidade').textContent = `Total de Produtos: ${totalInicial}`;
+                    
+                    // Atualizar lista de produtos
+                    updateProductList(produtos);
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar produtos:', error);
+                });
+            
+            // Confirmar envio da lista
+            confirmarEnvioBtn.addEventListener('click', function() {
+                const responsavelId = responsavelSelect.value;
+                const pin = pinInput.value;
+                
+                if (!responsavelId || !pin) {
+                    showNotification('Selecione um responsável e digite o PIN', 'warning');
+                    return;
+                }
+                
+                // Enviar lista com distribuição automática por destinos
+                fetch('/api/enviar-lista-automatica', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        responsavel_id: responsavelId,
+                        pin: pin
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Fechar modal
+                    confirmEnvioModal.hide();
+                    
+                    if (data.error) {
+                        showNotification(data.error, 'danger');
+                    } else {
+                        // Recarregar produtos (apenas os não enviados permanecerão)
+                        loadProducts();
+                        
+                        // Mostrar mensagem de sucesso com resumo
+                        let mensagem = 'Lista enviada com sucesso!\n\n';
+                        if (data.resumo) {
+                            mensagem += data.resumo;
+                        } else {
+                            mensagem += data.message || 'Produtos distribuídos automaticamente para seus destinos!';
+                        }
+                        
+                        showNotification(mensagem, 'success');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    showNotification('Erro ao enviar lista', 'danger');
+                });
+            });
+            
+            // Função para atualizar a lista de produtos
+            function updateProductList(produtos) {
+                // Limpar a tabela
+                productList.innerHTML = '';
+                
+                // Variável para calcular a somatória total
+                let totalQuantidade = 0;
+                
+                if (produtos.length === 0) {
+                    const emptyRow = document.createElement('tr');
+                    emptyRow.id = 'empty-row';
+                    emptyRow.innerHTML = '<td colspan="9" class="text-center">Nenhum produto cadastrado</td>';
+                    productList.appendChild(emptyRow);
+                } else {
+                    produtos.forEach(produto => {
+                        const row = document.createElement('tr');
+                        row.setAttribute('data-id', produto.id);
+                        
+                        // Somar a quantidade
+                        totalQuantidade += parseInt(produto.quantidade || 0);
+                        
+                        // Determinar a classe CSS para o destino
+                        let destinoClass = '';
+                        let destinoTexto = produto.destino || 'Não definido';
+                        
+                        if (produto.destino === 'mercado_livre') {
+                            destinoClass = 'destino-mercado-livre';
+                            destinoTexto = 'Mercado Livre';
+                        } else if (produto.destino === 'loja') {
+                            destinoClass = 'destino-loja';
+                            destinoTexto = 'Loja';
+                        } else if (produto.destino === 'manutencao') {
+                            destinoClass = 'destino-manutencao';
+                            destinoTexto = 'Manutenção';
+                        }
+                        
+                        // Determinar o motivo (apenas para manutenção)
+                        let motivoTexto = '-';
+                        if (produto.destino === 'manutencao' && produto.motivo_manutencao) {
+                            motivoTexto = `<small class="text-muted" title="${produto.motivo_manutencao}">${produto.motivo_manutencao.length > 30 ? produto.motivo_manutencao.substring(0, 30) + '...' : produto.motivo_manutencao}</small>`;
+                        }
+                        
+                        row.innerHTML = `
+                            <td>${produto.ean}</td>
+                            <td>${produto.nome}</td>
+                            <td>${produto.cor || '-'}</td>
+                            <td>${produto.voltagem || '-'}</td>
+                            <td>${produto.modelo || '-'}</td>
+                            <td>${produto.quantidade}</td>
+                            <td><span class="${destinoClass}">${destinoTexto}</span></td>
+                            <td>${motivoTexto}</td>
+                            <td>
+                                <button class="btn btn-sm btn-danger btn-action" onclick="deleteProduct(${produto.id})">Excluir</button>
+                            </td>
+                        `;
+                        productList.appendChild(row);
+                    });
+                }
+                
+                // Atualizar a somatória total
+                document.getElementById('totalQuantidade').textContent = `Total de Produtos: ${totalQuantidade}`;
+            }
+
+            // Carregar produtos ao inicializar
+            loadProducts();
+            
+            // Função debounce para otimizar as buscas
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+            
+            // Função para buscar produtos por nome
+            function buscarPorNome(termo) {
+                if (termo.length < 3) {
+                    document.getElementById('area-resultados-busca').style.display = 'none';
+                    return;
+                }
+                
+                // CORREÇÃO: Usar rota correta com método POST
+                fetch('/api/buscar-por-nome', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ nome: termo })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        const areaResultados = document.getElementById('area-resultados-busca');
+                        const containerResultados = document.getElementById('resultados-busca');
+                        
+                        if (data.success && data.produtos && data.produtos.length > 0) {
+                            let html = '';
+                            data.produtos.forEach(produto => {
+                                html += `
+                                    <div class="col-md-6 produto-card">
+                                        <div class="produto-card-inner" onclick="selecionarProduto('${escapeHtml(produto.ean)}', '${escapeHtml(produto.nome)}', '${escapeHtml(produto.cor || '')}', '${escapeHtml(produto.voltagem || '')}', '${escapeHtml(produto.modelo || '')}')">
+                                            <div class="produto-nome">${escapeHtml(produto.nome)}</div>
+                                            <div class="produto-ean"><strong>EAN:</strong> ${escapeHtml(produto.ean)}</div>
+                                            <div class="produto-info"><strong>Nome:</strong> ${escapeHtml(produto.nome)}</div>
+                                            <div class="produto-stats">Cadastrado ${produto.total_cadastros} vez(es) | Total: ${produto.quantidade_total} unidades</div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            containerResultados.innerHTML = html;
+                            areaResultados.style.display = 'block';
+                        } else {
+                            containerResultados.innerHTML = '<div class="col-12"><div class="resultado-vazio">Nenhum produto encontrado com esse nome</div></div>';
+                            areaResultados.style.display = 'block';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao buscar produtos:', error);
+                        document.getElementById('area-resultados-busca').style.display = 'none';
+                    });
+            }
+            
+            // Função para escapar HTML
+            function escapeHtml(text) {
+                if (!text) return '';
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+            }
+            
+            // Função para selecionar um produto da busca
+            window.selecionarProduto = function(ean, nome, cor, voltagem, modelo) {
+                // Preencher os campos do formulário principal
+                document.getElementById('ean').value = ean;
+                document.getElementById('nome').value = nome;
+                document.getElementById('cor').value = cor;
+                document.getElementById('voltagem').value = voltagem;
+                document.getElementById('modelo').value = modelo;
+                
+                // Ocultar resultados da busca
+                document.getElementById('area-resultados-busca').style.display = 'none';
+                
+                // Limpar campo de busca
+                document.getElementById('nome-busca').value = '';
+                
+                // Focar no campo quantidade
+                document.getElementById('quantidade').focus();
+                
+                // Mostrar mensagem de sucesso
+                showNotification('Produto selecionado! Agora informe a quantidade.', 'success');
+            };
+            
+            // Configurar busca automática com debounce
+            const buscarComDebounce = debounce(buscarPorNome, 500);
+            
+            // Event listener para o campo de busca por nome
+            const campoBusca = document.getElementById('nome-busca');
+            if (campoBusca) {
+                campoBusca.addEventListener('input', function(e) {
+                    buscarComDebounce(e.target.value);
+                });
+            }
+        });
+
+        // Função global para deletar produto
+        function deleteProduct(id) {
+            if (confirm('Tem certeza que deseja excluir este produto?')) {
+                // Encontrar a linha do produto na tabela ANTES da requisição
+                const produtoRow = document.querySelector(`tr[data-id="${id}"]`);
+                const quantidadeProduto = produtoRow ? parseInt(produtoRow.cells[5].textContent) : 0;
+                
+                // Remover a linha da tabela IMEDIATAMENTE (otimistic update)
+                if (produtoRow) {
+                    produtoRow.remove();
+                    
+                    // Atualizar a somatória subtraindo a quantidade do produto excluído
+                    const totalElement = document.getElementById('totalQuantidade');
+                    const totalAtual = parseInt(totalElement.textContent.match(/\d+/)[0]) || 0;
+                    const novoTotal = Math.max(0, totalAtual - quantidadeProduto);
+                    totalElement.textContent = `Total de Produtos: ${novoTotal}`;
+                    
+                    // Verificar se a tabela ficou vazia e adicionar linha de "vazio"
+                    const productList = document.getElementById('productList'); // ID correto: productList
+                    if (productList.children.length === 0) {
+                        const emptyRow = document.createElement('tr');
+                        emptyRow.id = 'empty-row';
+                        emptyRow.innerHTML = '<td colspan="7" class="text-center">Nenhum produto cadastrado</td>';
+                        productList.appendChild(emptyRow);
+                    }
+                }
+                
+                // Fazer a requisição para o servidor (em background)
+                fetch(`/api/produtos/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    
+                    if (response.ok) {
+                        // Sucesso - produto já foi removido da interface
+                        showNotification('Produto excluído com sucesso!', 'success');
+                        return response.json().catch(() => ({ success: true }));
+                    } else {
+                        // Erro - recarregar a página para restaurar o estado correto
+                        console.error('Erro na exclusão, recarregando página...');
+                        location.reload();
+                        return response.json().catch(() => ({ 
+                            error: `Erro ${response.status}: ${response.statusText}` 
+                        }));
+                    }
+                })
+                .then(data => {
+                    if (data && data.error) {
+                        showNotification(data.error, 'danger');
+                        // Em caso de erro, recarregar para restaurar estado
+                        setTimeout(() => location.reload(), 2000);
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro na exclusão:', error);
+                    showNotification('Erro ao excluir produto. Recarregando página...', 'danger');
+                    // Em caso de erro de rede, recarregar para restaurar estado
+                    setTimeout(() => location.reload(), 2000);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
+
