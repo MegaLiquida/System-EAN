@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Usuários - Sistema EAN</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+        
+        .page-title {
+            color: #2c3e50;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .btn-create {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            padding: 12px 24px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-create:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+            color: white;
+        }
+        
+        .search-filters {
+            background: rgba(248, 249, 250, 0.8);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .table {
+            margin-bottom: 0;
+        }
+        
+        .table thead {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+        
+        .table thead th {
+            border: none;
+            font-weight: 600;
+            padding: 1rem;
+        }
+        
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-color: #e9ecef;
+        }
+        
+        .badge {
+            font-size: 0.8rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+        }
+        
+        .badge-estoque {
+            background: linear-gradient(45deg, #17a2b8, #20c997);
+            color: white;
+        }
+        
+        .badge-cadastro {
+            background: linear-gradient(45deg, #ffc107, #fd7e14);
+            color: white;
+        }
+        
+        .badge-admin {
+            background: linear-gradient(45deg, #dc3545, #e83e8c);
+            color: white;
+        }
+        
+        .btn-action {
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin: 0 2px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-edit {
+            background: linear-gradient(45deg, #ffc107, #fd7e14);
+            color: white;
+        }
+        
+        .btn-edit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+            color: white;
+        }
+        
+        .btn-delete {
+            background: linear-gradient(45deg, #dc3545, #c82333);
+            color: white;
+        }
+        
+        .btn-delete:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+            color: white;
+        }
+        
+        .modal-content {
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        .modal-header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 20px 20px 0 0;
+            border: none;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            padding: 12px 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .tipo-info {
+            background: rgba(102, 126, 234, 0.1);
+            border-left: 4px solid #667eea;
+            padding: 1rem;
+            border-radius: 0 10px 10px 0;
+            margin-top: 0.5rem;
+        }
+        
+        .tipo-info h6 {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .spinner-border {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="#">
+                <i class="bi bi-gear-fill"></i> Sistema EAN
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('admin') }}">
+                    <i class="bi bi-house-fill"></i> Painel Admin
+                </a>
+                <a class="nav-link text-danger" href="{{ url_for('logout') }}">
+                    <i class="bi bi-box-arrow-right"></i> Sair
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="main-container">
+            <h1 class="page-title">
+                <i class="bi bi-people-fill"></i> Gerenciar Usuários
+            </h1>
+
+            <!-- Botão Criar Usuário -->
+            <div class="text-center mb-4">
+                <button class="btn btn-create" onclick="abrirModalCriar()">
+                    <i class="bi bi-person-plus-fill"></i> Criar Novo Usuário
+                </button>
+            </div>
+
+            <!-- Filtros de Busca -->
+            <div class="search-filters">
+                <div class="row">
+                    <div class="col-md-6">
+                        <input type="text" class="form-control" id="buscarNome" placeholder="Buscar por nome" onkeyup="filtrarUsuarios()">
+                    </div>
+                    <div class="col-md-6">
+                        <select class="form-select" id="filtroTipo" onchange="filtrarUsuarios()">
+                            <option value="">Todos os Tipos</option>
+                            <option value="sistema_estoque">Sistema de Estoque</option>
+                            <option value="sistema_cadastro">Sistema de Cadastro de Produtos</option>
+                            <option value="painel_administrativo">Painel Administrativo</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alertas -->
+            <div id="alertContainer"></div>
+
+            <!-- Loading -->
+            <div class="loading" id="loading">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Carregando...</span>
+                </div>
+                <p class="mt-2">Carregando usuários...</p>
+            </div>
+
+            <!-- Tabela de Usuários -->
+            <div class="table-container">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Tipo</th>
+                            <th>Admin</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usuariosTableBody">
+                        <!-- Dados carregados via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Criar/Editar Usuário -->
+    <div class="modal fade" id="usuarioModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">
+                        <i class="bi bi-person-plus-fill"></i> Criar Usuário
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="usuarioForm">
+                        <input type="hidden" id="usuarioId">
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Nome de Usuário *</label>
+                                <input type="text" class="form-control" id="nomeUsuario" required>
+                                <div class="form-text">Mínimo 3 caracteres. Apenas letras, números, _ e -</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Nova Senha</label>
+                                <input type="password" class="form-control" id="senhaUsuario">
+                                <div class="form-text">Deixe em branco para não alterar</div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-8">
+                                <label class="form-label">Tipo de Usuário *</label>
+                                <select class="form-select" id="tipoUsuario" required onchange="mostrarInfoTipo()">
+                                    <option value="">Selecione o tipo</option>
+                                    <option value="sistema_estoque">Sistema de Estoque - Acesso ao painel de estoque</option>
+                                    <option value="sistema_cadastro">Sistema de Cadastro de Produtos - Acesso ao painel de cadastro</option>
+                                    <option value="painel_administrativo">Painel Administrativo - Acesso completo ao sistema</option>
+                                </select>
+                                <div id="tipoInfo"></div>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Status</label>
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input" type="checkbox" id="usuarioAtivo" checked>
+                                    <label class="form-check-label" for="usuarioAtivo">Usuário Ativo</label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="salvarUsuario()">
+                        <i class="bi bi-check-circle"></i> Salvar Alterações
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let usuarios = [];
+        let usuarioModal;
+
+        // Inicializar quando a página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            usuarioModal = new bootstrap.Modal(document.getElementById('usuarioModal'));
+            carregarUsuarios();
+        });
+
+        // Carregar lista de usuários
+        async function carregarUsuarios() {
+            try {
+                document.getElementById('loading').style.display = 'block';
+                const response = await fetch('/api/dev/usuarios');
+                
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                // CORREÇÃO: Verificar se a resposta tem a estrutura esperada
+                if (data.success && data.usuarios) {
+                    usuarios = data.usuarios;
+                } else {
+                    // Fallback: se a resposta for um array direto
+                    usuarios = Array.isArray(data) ? data : [];
+                }
+                
+                renderizarUsuarios();
+                document.getElementById('loading').style.display = 'none';
+            } catch (error) {
+                console.error('Erro ao carregar usuários:', error);
+                mostrarAlerta('Erro ao carregar usuários: ' + error.message, 'danger');
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        // Renderizar tabela de usuários
+        function renderizarUsuarios() {
+            const tbody = document.getElementById('usuariosTableBody');
+            const busca = document.getElementById('buscarNome').value.toLowerCase();
+            const filtroTipo = document.getElementById('filtroTipo').value;
+
+            let usuariosFiltrados = usuarios.filter(usuario => {
+                const nomeMatch = usuario.nome.toLowerCase().includes(busca);
+                const tipoMatch = !filtroTipo || obterTipoPorAdmin(usuario.admin) === filtroTipo;
+                return nomeMatch && tipoMatch;
+            });
+
+            tbody.innerHTML = usuariosFiltrados.map(usuario => {
+                const tipo = obterTipoPorAdmin(usuario.admin);
+                const badgeClass = obterClasseBadge(tipo);
+                const tipoTexto = obterTextoTipo(tipo);
+                
+                return `
+                    <tr>
+                        <td><strong>${usuario.id}</strong></td>
+                        <td>${usuario.nome}</td>
+                        <td><span class="badge ${badgeClass}">${tipoTexto}</span></td>
+                        <td>
+                            <span class="badge ${usuario.admin ? 'bg-success' : 'bg-danger'}">
+                                ${usuario.admin ? 'Sim' : 'Não'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-action btn-edit" onclick="editarUsuario(${usuario.id})" title="Editar">
+                                <i class="bi bi-pencil-fill"></i>
+                            </button>
+                            <button class="btn btn-action btn-delete" onclick="excluirUsuario(${usuario.id})" title="Excluir">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Obter tipo por flag admin
+        function obterTipoPorAdmin(admin) {
+            return admin ? 'painel_administrativo' : 'sistema_estoque';
+        }
+
+        // Obter classe do badge por tipo
+        function obterClasseBadge(tipo) {
+            const classes = {
+                'sistema_estoque': 'badge-estoque',
+                'sistema_cadastro': 'badge-cadastro',
+                'painel_administrativo': 'badge-admin'
+            };
+            return classes[tipo] || 'bg-secondary';
+        }
+
+        // Obter texto do tipo
+        function obterTextoTipo(tipo) {
+            const textos = {
+                'sistema_estoque': 'Sistema de Estoque',
+                'sistema_cadastro': 'Sistema de Cadastro',
+                'painel_administrativo': 'Painel Administrativo'
+            };
+            return textos[tipo] || 'Não definido';
+        }
+
+        // Filtrar usuários
+        function filtrarUsuarios() {
+            renderizarUsuarios();
+        }
+
+        // Abrir modal para criar usuário
+        function abrirModalCriar() {
+            document.getElementById('modalTitle').innerHTML = '<i class="bi bi-person-plus-fill"></i> Criar Usuário';
+            document.getElementById('usuarioForm').reset();
+            document.getElementById('usuarioId').value = '';
+            document.getElementById('usuarioAtivo').checked = true;
+            document.getElementById('tipoInfo').innerHTML = '';
+            usuarioModal.show();
+        }
+
+        // Editar usuário
+        function editarUsuario(id) {
+            const usuario = usuarios.find(u => u.id === id);
+            if (!usuario) return;
+
+            document.getElementById('modalTitle').innerHTML = '<i class="bi bi-pencil-fill"></i> Editar Usuário';
+            document.getElementById('usuarioId').value = usuario.id;
+            document.getElementById('nomeUsuario').value = usuario.nome;
+            document.getElementById('senhaUsuario').value = '';
+            
+            // CORREÇÃO: Definir o tipo correto baseado no admin flag
+            const tipoUsuario = obterTipoPorAdmin(usuario.admin);
+            document.getElementById('tipoUsuario').value = tipoUsuario;
+            
+            document.getElementById('usuarioAtivo').checked = true; // Assumindo ativo por padrão
+            
+            // Mostrar informações do tipo
+            mostrarInfoTipo();
+            
+            usuarioModal.show();
+        }
+
+        // Mostrar informações do tipo selecionado
+        function mostrarInfoTipo() {
+            const tipo = document.getElementById('tipoUsuario').value;
+            const infoDiv = document.getElementById('tipoInfo');
+            
+            const infos = {
+                'sistema_estoque': {
+                    titulo: '📦 Sistema de Estoque',
+                    descricao: 'Acesso completo: gerenciar usuários, validar listas, estoque local, desenvolvedores e todas as funcionalidades.',
+                    detalhes: 'Acesso total ao sistema (admin.html) incluindo gerenciamento de usuários, validação de listas e todas as funcionalidades.'
+                },
+                'sistema_cadastro': {
+                    titulo: '📝 Sistema de Cadastro de Produtos',
+                    descricao: 'Acesso ao painel de cadastro: adicionar novos produtos, gerenciar produtos cadastrados e criar listas.',
+                    detalhes: 'Acesso ao painel de cadastro (index.html) para adicionar produtos e criar listas para envio ao administrador.'
+                },
+                'painel_administrativo': {
+                    titulo: '👑 Painel Administrativo',
+                    descricao: 'Acesso completo: gerenciar usuários, validar listas, estoque local, desenvolvedores e todas as funcionalidades.',
+                    detalhes: 'Acesso total ao sistema (admin.html) incluindo gerenciamento de usuários, validação de listas e todas as funcionalidades.'
+                }
+            };
+            
+            if (tipo && infos[tipo]) {
+                const info = infos[tipo];
+                infoDiv.innerHTML = `
+                    <div class="tipo-info">
+                        <h6>${info.titulo}</h6>
+                        <p class="mb-1">${info.descricao}</p>
+                        <small class="text-muted">${info.detalhes}</small>
+                    </div>
+                `;
+            } else {
+                infoDiv.innerHTML = '';
+            }
+        }
+
+        // Salvar usuário (criar ou editar)
+        async function salvarUsuario() {
+            try {
+                const id = document.getElementById('usuarioId').value;
+                const nome = document.getElementById('nomeUsuario').value.trim();
+                const senha = document.getElementById('senhaUsuario').value;
+                const tipo = document.getElementById('tipoUsuario').value;
+                const ativo = document.getElementById('usuarioAtivo').checked;
+
+                // Validações
+                if (!nome || nome.length < 3) {
+                    mostrarAlerta('Nome deve ter pelo menos 3 caracteres', 'warning');
+                    return;
+                }
+
+                if (!tipo) {
+                    mostrarAlerta('Selecione um tipo de usuário', 'warning');
+                    return;
+                }
+
+                if (!id && !senha) {
+                    mostrarAlerta('Senha é obrigatória para novos usuários', 'warning');
+                    return;
+                }
+
+                const dados = {
+                    nome: nome,
+                    tipo: tipo,
+                    ativo: ativo
+                };
+
+                if (senha) {
+                    dados.senha = senha;
+                }
+
+                const url = id ? `/api/dev/usuarios/${id}` : '/api/dev/usuarios';
+                const method = id ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dados)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    mostrarAlerta(id ? 'Usuário atualizado com sucesso!' : 'Usuário criado com sucesso!', 'success');
+                    usuarioModal.hide();
+                    carregarUsuarios();
+                } else {
+                    mostrarAlerta('Erro: ' + (result.message || 'Erro interno do servidor'), 'danger');
+                }
+            } catch (error) {
+                console.error('Erro ao salvar usuário:', error);
+                mostrarAlerta('Erro ao salvar usuário: ' + error.message, 'danger');
+            }
+        }
+
+        // Excluir usuário
+        async function excluirUsuario(id) {
+            if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
+
+            try {
+                const response = await fetch(`/api/dev/usuarios/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    mostrarAlerta('Usuário excluído com sucesso!', 'success');
+                    carregarUsuarios();
+                } else {
+                    mostrarAlerta('Erro ao excluir usuário: ' + (result.message || 'Erro interno'), 'danger');
+                }
+            } catch (error) {
+                console.error('Erro ao excluir usuário:', error);
+                mostrarAlerta('Erro ao excluir usuário: ' + error.message, 'danger');
+            }
+        }
+
+        // Mostrar alerta
+        function mostrarAlerta(mensagem, tipo) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alertId = 'alert-' + Date.now();
+            
+            const alertHtml = `
+                <div class="alert alert-${tipo} alert-dismissible fade show" id="${alertId}" role="alert">
+                    ${mensagem}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            alertContainer.innerHTML = alertHtml;
+            
+            // Auto-remover após 5 segundos
+            setTimeout(() => {
+                const alertElement = document.getElementById(alertId);
+                if (alertElement) {
+                    const alert = bootstrap.Alert.getOrCreateInstance(alertElement);
+                    alert.close();
+                }
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
+

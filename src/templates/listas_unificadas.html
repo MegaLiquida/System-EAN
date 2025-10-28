@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listas Unificadas - Sistema de Cadastro de Produtos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+        .navbar {
+            margin-bottom: 20px;
+        }
+        .lista-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-left: 5px solid #007bff;
+        }
+        .lista-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .lista-header {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border-radius: 8px 8px 0 0;
+        }
+        .lista-stats {
+            background-color: #f8f9fa;
+            border-radius: 0 0 8px 8px;
+        }
+        .stat-item {
+            text-align: center;
+            padding: 10px;
+        }
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .stat-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            text-transform: uppercase;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        .btn-view-details {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border: none;
+            color: white;
+            transition: all 0.3s;
+        }
+        .btn-view-details:hover {
+            background: linear-gradient(135deg, #20c997, #28a745);
+            color: white;
+            transform: scale(1.05);
+        }
+        .validador-badge {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .data-badge {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-collection"></i> Listas Unificadas
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin') }}">
+                            <i class="bi bi-arrow-left"></i> Voltar ao Painel
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-link">Olá, {{ session.usuario_nome }}</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Sair</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="mb-1">
+                            <i class="bi bi-collection text-primary"></i> 
+                            Listas Unificadas
+                        </h2>
+                        <p class="text-muted mb-0">
+                            Visualize e gerencie as listas criadas a partir da validação em lote
+                        </p>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-primary fs-6">
+                            {{ listas|length }} lista(s) criada(s)
+                        </span>
+                    </div>
+                </div>
+
+                {% if listas %}
+                    <div class="row">
+                        {% for lista in listas %}
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card lista-card h-100">
+                                <div class="lista-header p-3">
+                                    <h5 class="card-title mb-2">
+                                        <i class="bi bi-list-check"></i>
+                                        {{ lista.nome_lista.replace('Lista_Unificada_', '').replace('_', ' ') }}
+                                    </h5>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <span class="validador-badge">
+                                            <i class="bi bi-person-check"></i>
+                                            {{ lista.nome_validador }}
+                                        </span>
+                                        <span class="data-badge">
+                                            <i class="bi bi-calendar"></i>
+                                            {{ lista.data_criacao|data_brasileira }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="lista-stats">
+                                    <div class="row g-0">
+                                        <div class="col-6">
+                                            <div class="stat-item border-end">
+                                                <div class="stat-number">{{ lista.total_produtos }}</div>
+                                                <div class="stat-label">Produtos Únicos</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="stat-item">
+                                                <div class="stat-number">{{ lista.total_quantidade }}</div>
+                                                <div class="stat-label">Quantidade Total</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card-body d-flex flex-column">
+                                    <div class="mt-auto">
+                                        <a href="{{ url_for('detalhes_lista_unificada', lista_id=lista.id) }}" 
+                                           class="btn btn-view-details w-100">
+                                            <i class="bi bi-eye"></i> Ver Detalhes
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <h4>Nenhuma Lista Unificada Encontrada</h4>
+                        <p class="mb-4">
+                            As listas unificadas são criadas automaticamente quando você valida múltiplas listas no painel administrativo.
+                        </p>
+                        <a href="{{ url_for('admin') }}" class="btn btn-primary">
+                            <i class="bi bi-arrow-left"></i> Voltar ao Painel Administrativo
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
