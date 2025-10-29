@@ -2,11 +2,11 @@
 Aplicação Principal do Sistema EAN
 Versão Refatorada com Arquitetura Modular
 """
-from flask import Flask, session
+from flask import Flask, session, redirect, url_for
 from src.config.settings import get_config
 from src.extensions.database import init_connection_pool, close_connection_pool
 from src.utils.logger import setup_logging
-from src.utils.error_handlers import register_error_handlers
+# from src.utils.error_handlers import register_error_handlers  # DESABILITADO TEMPORARIAMENTE
 import os
 import logging
 
@@ -50,8 +50,9 @@ def create_app(config_name=None):
     else:
         logger.warning("DATABASE_URL não configurada. Pool de conexões não inicializado.")
     
-    # Registrar error handlers
-    register_error_handlers(app)
+    # Registrar error handlers (DESABILITADO TEMPORARIAMENTE)
+    # register_error_handlers(app)
+    logger.info("Error handlers desabilitados temporariamente")
     
     # Registrar Blueprints
     register_blueprints(app)
@@ -78,6 +79,13 @@ def register_blueprints(app):
     from src.routes.produtos import produtos_bp
     from src.routes.estoque import estoque_bp
     from src.routes.admin import admin_bp
+    
+    # ===== ROTA RAIZ - REDIRECIONA PARA LOGIN =====
+    @app.route('/')
+    def index():
+        """Rota raiz - redireciona para login"""
+        return redirect(url_for('auth.login'))
+    # ===============================================
     
     # Blueprint de autenticação (sem prefixo)
     app.register_blueprint(auth_bp)
