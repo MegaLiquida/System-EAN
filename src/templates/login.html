@@ -56,7 +56,7 @@
                 {% endif %}
             {% endwith %}
             
-            <form method="post" action="{{ url_for('login') }}">
+            <form m<form method="post" action="{{ url_for('auth.login') }}">
                 <div class="form-group">
                     <label for="nome">Nome de Usuário</label>
                     <input type="text" class="form-control" id="nome" name="nome" required>
