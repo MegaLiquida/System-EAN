@@ -25,8 +25,8 @@ def create_app(config_name=None):
     """
     # Criar aplicação
     app = Flask(__name__,
-                template_folder='../templates',
-                static_folder='../static')
+                template_folder='templates',
+                static_folder='static')
     
     # Carregar configurações
     if config_name is None:
