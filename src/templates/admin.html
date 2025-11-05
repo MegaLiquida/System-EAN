@@ -186,39 +186,39 @@
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="paineisDropdown">
                             <li>
-                                <a class="dropdown-item" href="{{ url_for('painel_desempenho') }}">
+                                <a class="dropdown-item" href="{{ url_for('admin.painel_desempenho') }}">
                                     <i class="bi bi-graph-up"></i> Desempenho de Usuários
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{{ url_for('estoque_local') }}">
+                                <a class="dropdown-item" href="{{ url_for('admin.estoque_local') }}">
                                     <i class="bi bi-box-seam"></i> Estoque Local
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{{ url_for('listas_unificadas') }}">
+                                <a class="dropdown-item" href="{{ url_for('admin.listas_unificadas') }}">
                                     <i class="bi bi-collection"></i> Listas Unificadas
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{{ url_for('stand_by') }}">
+                                <a class="dropdown-item" href="{{ url_for('admin.stand_by') }}">
                                     <i class="bi bi-pause-circle"></i> Stand-by
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item" href="{{ url_for('painel_loja') }}">
+                                <a class="dropdown-item" href="{{ url_for('admin.painel_loja') }}">
                                     <i class="bi bi-shop"></i> Loja
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="{{ url_for('painel_manutencao') }}">
+                                <a class="dropdown-item" href="{{ url_for('admin.painel_manutencao') }}">
                                     <i class="bi bi-tools"></i> Manutenção
                                 </a>
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item" href="{{ url_for('gerenciar_usuarios') }}">
+                                <a class="dropdown-item" href="{{ url_for('admin.gerenciar_usuarios') }}">
                                     <i class="bi bi-people-fill"></i> Desenvolvedores
                                 </a>
                             </li>
@@ -234,7 +234,7 @@
                     
                     <!-- Botão Sair -->
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('logout') }}">
+                        <a class="nav-link" href="{{ url_for('auth.logout') }}">
                             <i class="bi bi-box-arrow-right"></i> Sair
                         </a>
                     </li>
@@ -258,7 +258,7 @@
                     <div class="card-body">
                         <!-- Campo de pesquisa -->
                         <div class="search-container">
-                            <form action="{{ url_for('admin') }}" method="GET" class="row g-3">
+                            <form action="{{ url_for('admin.dashboard') }}" method="GET" class="row g-3">
                                 <div class="col-md-10">
                                     <div class="input-group">
                                         <input type="text" class="form-control" name="pesquisa" id="pesquisa" 
@@ -271,7 +271,7 @@
                                 </div>
                                 <div class="col-md-2">
                                     {% if termo_pesquisa %}
-                                    <a href="{{ url_for('admin') }}" class="btn btn-outline-secondary w-100">
+                                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary w-100">
                                         <i class="bi bi-x-circle"></i> Limpar
                                     </a>
                                     {% endif %}
@@ -284,7 +284,7 @@
                                     <h6 class="text-muted">Buscar por Data</h6>
                                 </div>
                                 <div class="col-md-4">
-                                    <form action="{{ url_for("admin") }}" method="GET" class="d-flex" id="form_data_unica">
+                                    <form action="{{ url_for("admin.dashboard") }}" method="GET" class="d-flex" id="form_data_unica">
                                         <div class="input-group">
                                             <input type="text" class="form-control date-picker-input" name="data" id="data_busca" 
                                                    placeholder="dd/mm/aaaa" 
@@ -297,7 +297,7 @@
                                     </form>
                                 </div>
                                 <div class="col-md-6">
-                                    <form action="{{ url_for("admin") }}" method="GET" class="d-flex" id="form_periodo">
+                                    <form action="{{ url_for("admin.dashboard") }}" method="GET" class="d-flex" id="form_periodo">
                                         <div class="input-group">
                                             <input type="text" class="form-control date-picker-input" name="data_inicio" id="data_inicio" 
                                                    placeholder="Data início (dd/mm/aaaa)" 
@@ -315,7 +315,7 @@
                                 </div>
                                 <div class="col-md-2">
                                     {% if data_busca or (data_inicio and data_fim) %}
-                                    <a href="{{ url_for('admin') }}" class="btn btn-outline-secondary w-100">
+                                    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-secondary w-100">
                                         <i class="bi bi-x-circle"></i> Limpar Data
                                     </a>
                                     {% endif %}
@@ -328,7 +328,7 @@
                                     <h6 class="text-muted">Filtrar por Criador</h6>
                                 </div>
                                 <div class="col-md-8">
-                                    <form action="{{ url_for("admin") }}" method="GET" class="d-flex" id="form_criador">
+                                    <form action="{{ url_for("admin.dashboard") }}" method="GET" class="d-flex" id="form_criador">
                                         <!-- Manter filtros de data se existirem -->
                                         {% if data_busca %}
                                         <input type="hidden" name="data" value="{{ data_busca }}">

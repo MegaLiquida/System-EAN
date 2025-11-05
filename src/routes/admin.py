@@ -87,7 +87,7 @@ def dashboard():
         
         # Contar total de listas
         count_query = """
-            SELECT COUNT(DISTINCT data_envio, responsavel_id, responsavel_pin)
+            SELECT COUNT(DISTINCT (data_envio, responsavel_id, responsavel_pin))
             FROM produtos
             WHERE enviado = 1 AND validado = 0
         """
