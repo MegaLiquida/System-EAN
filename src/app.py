@@ -2,11 +2,11 @@
 Aplicação Principal do Sistema EAN
 Versão Refatorada com Arquitetura Modular
 """
-from flask import Flask, session, redirect, url_for
+from flask import Flask, session
 from src.config.settings import get_config
 from src.extensions.database import init_connection_pool, close_connection_pool
 from src.utils.logger import setup_logging
-# from src.utils.error_handlers import register_error_handlers  # DESABILITADO TEMPORARIAMENTE
+from src.utils.error_handlers import register_error_handlers
 import os
 import logging
 
@@ -25,8 +25,8 @@ def create_app(config_name=None):
     """
     # Criar aplicação
     app = Flask(__name__,
-                template_folder='templates',
-                static_folder='static')
+                template_folder='../templates',
+                static_folder='../static')
     
     # Carregar configurações
     if config_name is None:
@@ -63,6 +63,9 @@ def create_app(config_name=None):
     # Context processors
     register_context_processors(app)
     
+    # Registrar filtros de template
+    register_template_filters(app)
+    
     logger.info("Aplicação configurada com sucesso")
     
     return app
@@ -75,17 +78,16 @@ def register_blueprints(app):
     Args:
         app: Aplicação Flask
     """
+    from flask import redirect, url_for
     from src.routes.auth import auth_bp
     from src.routes.produtos import produtos_bp
     from src.routes.estoque import estoque_bp
     from src.routes.admin import admin_bp
     
-    # ===== ROTA RAIZ - REDIRECIONA PARA LOGIN =====
+    # Rota raiz - redireciona para login
     @app.route('/')
     def index():
-        """Rota raiz - redireciona para login"""
         return redirect(url_for('auth.login'))
-    # ===============================================
     
     # Blueprint de autenticação (sem prefixo)
     app.register_blueprint(auth_bp)
@@ -157,6 +159,83 @@ def register_context_processors(app):
         }
     
     logger.info("Context processors registrados")
+
+
+def register_template_filters(app):
+    """
+    Registra filtros customizados para templates Jinja2
+    
+    Args:
+        app: Aplicação Flask
+    """
+    from datetime import datetime
+    from decimal import Decimal
+    
+    @app.template_filter('data_brasileira')
+    def data_brasileira_filter(data):
+        """
+        Formata data no padrão brasileiro DD/MM/YYYY HH:MM
+        
+        Args:
+            data: datetime, date ou string ISO
+        
+        Returns:
+            String formatada ou valor original se inválido
+        """
+        if data is None:
+            return ''
+        
+        try:
+            # Se for string, tentar converter
+            if isinstance(data, str):
+                # Tentar formato ISO
+                if 'T' in data:
+                    data = datetime.fromisoformat(data.replace('Z', '+00:00'))
+                else:
+                    data = datetime.strptime(data, '%Y-%m-%d %H:%M:%S')
+            
+            # Formatar data
+            if isinstance(data, datetime):
+                return data.strftime('%d/%m/%Y %H:%M')
+            else:
+                # Se for date (sem hora)
+                return data.strftime('%d/%m/%Y')
+        except Exception as e:
+            logger.warning(f"Erro ao formatar data '{data}': {e}")
+            return str(data)
+    
+    @app.template_filter('moeda')
+    def moeda_filter(valor):
+        """
+        Formata valor numérico como moeda brasileira (R$ X.XXX,XX)
+        
+        Args:
+            valor: float, int, Decimal ou string numérica
+        
+        Returns:
+            String formatada como moeda
+        """
+        if valor is None:
+            return 'R$ 0,00'
+        
+        try:
+            # Converter para float se necessário
+            if isinstance(valor, str):
+                valor = float(valor.replace(',', '.'))
+            elif isinstance(valor, Decimal):
+                valor = float(valor)
+            
+            # Formatar com separadores brasileiros
+            valor_formatado = f"{valor:,.2f}"
+            # Trocar separadores (1,234.56 -> 1.234,56)
+            valor_formatado = valor_formatado.replace(',', 'X').replace('.', ',').replace('X', '.')
+            
+            return f"R$ {valor_formatado}"
+        except Exception as e:
+            logger.warning(f"Erro ao formatar moeda '{valor}': {e}")
+            return f"R$ {valor}"
+    
+    logger.info("Filtros de template registrados: data_brasileira, moeda")
 
 
 def run_app(app, host='0.0.0.0', port=5000, debug=None):
