@@ -56,7 +56,7 @@
                 {% endif %}
             {% endwith %}
             
-            <form method="post" action="{{ url_for('registro') }}">
+            <form method="post" action="{{ url_for('auth.registro') }}">
                 <div class="form-group">
                     <label for="nome">Nome de Usuário</label>
                     <input type="text" class="form-control" id="nome" name="nome" required>
@@ -69,7 +69,7 @@
             </form>
             
             <div class="login-link">
-                <p>Já tem uma conta? <a href="{{ url_for('login') }}">Faça login</a></p>
+                <p>Já tem uma conta? <a href="{{ url_for('auth.login') }}">Faça login</a></p>
             </div>
         </div>
     </div>

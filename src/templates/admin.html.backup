@@ -179,6 +179,51 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+                    <!-- Menu Dropdown para Painéis - DESABILITADO (rotas não implementadas) -->
+                    <!-- <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="paineisDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-grid-3x3-gap"></i> Painéis
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="paineisDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('admin.painel_desempenho') }}">
+                                    <i class="bi bi-graph-up"></i> Desempenho de Usuários
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('admin.estoque_local') }}">
+                                    <i class="bi bi-box-seam"></i> Estoque Local
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('admin.listas_unificadas') }}">
+                                    <i class="bi bi-collection"></i> Listas Unificadas
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('admin.stand_by') }}">
+                                    <i class="bi bi-pause-circle"></i> Stand-by
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('admin.painel_loja') }}">
+                                    <i class="bi bi-shop"></i> Loja
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('admin.painel_manutencao') }}">
+                                    <i class="bi bi-tools"></i> Manutenção
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('admin.gerenciar_usuarios') }}">
+                                    <i class="bi bi-people-fill"></i> Desenvolvedores
+                                </a>
+                            </li>
+                        </ul>
+                    </li> -->
                     
                     <!-- Informações do usuário -->
                     <li class="nav-item">
@@ -306,7 +351,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     {% if criador_filtro %}
-                                    <a href="{{ url_for('admin.dashboard', data=data_busca, data_inicio=data_inicio, data_fim=data_fim) }}" class="btn btn-outline-secondary w-100">
+                                    <a href="{{ url_for('admin', data=data_busca, data_inicio=data_inicio, data_fim=data_fim) }}" class="btn btn-outline-secondary w-100">
                                         <i class="bi bi-x-circle"></i> Limpar Filtro Criador
                                     </a>
                                     {% endif %}
@@ -501,7 +546,7 @@
                                         <!-- Botão Primeira Página -->
                                         {% if paginacao.pagina_atual > 1 %}
                                         <li class="page-item">
-                                            <a class="page-link" href="{{ url_for('admin.dashboard', pagina=1, pesquisa=termo_pesquisa, criador=criador_filtro, data=data_busca, data_inicio=data_inicio, data_fim=data_fim) }}" aria-label="Primeira página">
+                                            <a class="page-link" href="{{ url_for('admin', pagina=1, pesquisa=termo_pesquisa, criador=criador_filtro, data=data_busca, data_inicio=data_inicio, data_fim=data_fim) }}" aria-label="Primeira página">
                                                 <i class="bi bi-chevron-double-left"></i>
                                             </a>
                                         </li>
@@ -516,7 +561,7 @@
                                         <!-- Botão Página Anterior -->
                                         {% if paginacao.tem_anterior %}
                                         <li class="page-item">
-                                            <a class="page-link" href="{{ url_for('admin.dashboard', pagina=paginacao.pagina_atual-1, pesquisa=termo_pesquisa, criador=criador_filtro, data=data_busca, data_inicio=data_inicio, data_fim=data_fim) }}" aria-label="Página anterior">
+                                            <a class="page-link" href="{{ url_for('admin', pagina=paginacao.pagina_atual-1, pesquisa=termo_pesquisa, criador=criador_filtro, data=data_busca, data_inicio=data_inicio, data_fim=data_fim) }}" aria-label="Página anterior">
                                                 <i class="bi bi-chevron-left"></i>
                                             </a>
                                         </li>
@@ -534,7 +579,7 @@
                                         
                                         {% if start_page > 1 %}
                                         <li class="page-item">
-                                            <a class="page-link" href="{{ url_for('admin.dashboard', pagina=1, pesquisa=termo_pesquisa, criador=criador_filtro, data=data_busca, data_inicio=data_inicio, data_fim=data_fim) }}">1</a>
+                                            <a class="page-link" href="{{ url_for('admin', pagina=1, pesquisa=termo_pesquisa, criador=criador_filtro, data=data_busca, data_inicio=data_inicio, data_fim=data_fim) }}">1</a>
                                         </li>
                                         {% if start_page > 2 %}
                                         <li class="page-item disabled">
@@ -550,7 +595,7 @@
                                         </li>
                                         {% else %}
                                         <li class="page-item">
-                                            <a class="page-link" href="{{ url_for('admin.dashboard', pagina=page_num, pesquisa=termo_pesquisa, criador=criador_filtro, data=data_busca, data_inicio=data_inicio, data_fim=data_fim) }}">{{ page_num }}</a>
+                                            <a class="page-link" href="{{ url_for('admin', pagina=page_num, pesquisa=termo_pesquisa, criador=criador_filtro, data=data_busca, data_inicio=data_inicio, data_fim=data_fim) }}">{{ page_num }}</a>
                                         </li>
                                         {% endif %}
                                         {% endfor %}
@@ -562,14 +607,14 @@
                                         </li>
                                         {% endif %}
                                         <li class="page-item">
-                                            <a class="page-link" href="{{ url_for('admin.dashboard', pagina=paginacao.total_paginas, pesquisa=termo_pesquisa, criador=criador_filtro, data=data_busca, data_inicio=data_inicio, data_fim=data_fim) }}">{{ paginacao.total_paginas }}</a>
+                                            <a class="page-link" href="{{ url_for('admin', pagina=paginacao.total_paginas, pesquisa=termo_pesquisa, criador=criador_filtro, data=data_busca, data_inicio=data_inicio, data_fim=data_fim) }}">{{ paginacao.total_paginas }}</a>
                                         </li>
                                         {% endif %}
                                         
                                         <!-- Botão Próxima Página -->
                                         {% if paginacao.tem_proximo %}
                                         <li class="page-item">
-                                            <a class="page-link" href="{{ url_for('admin.dashboard', pagina=paginacao.pagina_atual+1, pesquisa=termo_pesquisa, criador=criador_filtro, data=data_busca, data_inicio=data_inicio, data_fim=data_fim) }}" aria-label="Próxima página">
+                                            <a class="page-link" href="{{ url_for('admin', pagina=paginacao.pagina_atual+1, pesquisa=termo_pesquisa, criador=criador_filtro, data=data_busca, data_inicio=data_inicio, data_fim=data_fim) }}" aria-label="Próxima página">
                                                 <i class="bi bi-chevron-right"></i>
                                             </a>
                                         </li>
@@ -584,7 +629,7 @@
                                         <!-- Botão Última Página -->
                                         {% if paginacao.pagina_atual < paginacao.total_paginas %}
                                         <li class="page-item">
-                                            <a class="page-link" href="{{ url_for('admin.dashboard', pagina=paginacao.total_paginas, pesquisa=termo_pesquisa, criador=criador_filtro, data=data_busca, data_inicio=data_inicio, data_fim=data_fim) }}" aria-label="Última página">
+                                            <a class="page-link" href="{{ url_for('admin', pagina=paginacao.total_paginas, pesquisa=termo_pesquisa, criador=criador_filtro, data=data_busca, data_inicio=data_inicio, data_fim=data_fim) }}" aria-label="Última página">
                                                 <i class="bi bi-chevron-double-right"></i>
                                             </a>
                                         </li>

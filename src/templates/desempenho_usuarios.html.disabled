@@ -82,7 +82,7 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('admin') }}">
+            <a class="navbar-brand" href="{{ url_for('admin.dashboard') }}">
                 <i class="bi bi-arrow-left"></i> Painel Administrativo
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -91,12 +91,12 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin') }}">
+                        <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
                             <i class="bi bi-list-ul"></i> Listas Enviadas
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('listas_unificadas') }}">
+                        <a class="nav-link" href="{{ url_for('admin.listas_unificadas') }}">
                             <i class="bi bi-collection"></i> Listas Unificadas
                         </a>
                     </li>
@@ -104,7 +104,7 @@
                         <span class="nav-link">Olá, {{ session.usuario_nome }}</span>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('logout') }}">Sair</a>
+                        <a class="nav-link" href="{{ url_for('auth.logout') }}">Sair</a>
                     </li>
                 </ul>
             </div>

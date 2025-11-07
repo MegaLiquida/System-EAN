@@ -96,7 +96,7 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin') }}">
+                        <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
                             <i class="bi bi-arrow-left"></i> Voltar ao Painel
                         </a>
                     </li>
@@ -104,7 +104,7 @@
                         <span class="nav-link">Olá, {{ session.usuario_nome }}</span>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('logout') }}">Sair</a>
+                        <a class="nav-link" href="{{ url_for('auth.logout') }}">Sair</a>
                     </li>
                 </ul>
             </div>
@@ -172,7 +172,7 @@
                                 
                                 <div class="card-body d-flex flex-column">
                                     <div class="mt-auto">
-                                        <a href="{{ url_for('detalhes_lista_unificada', lista_id=lista.id) }}" 
+                                        <a href="{{ url_for('admin.detalhes_lista_unificada', lista_id=lista.id) }}" 
                                            class="btn btn-view-details w-100">
                                             <i class="bi bi-eye"></i> Ver Detalhes
                                         </a>
@@ -189,7 +189,7 @@
                         <p class="mb-4">
                             As listas unificadas são criadas automaticamente quando você valida múltiplas listas no painel administrativo.
                         </p>
-                        <a href="{{ url_for('admin') }}" class="btn btn-primary">
+                        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary">
                             <i class="bi bi-arrow-left"></i> Voltar ao Painel Administrativo
                         </a>
                     </div>

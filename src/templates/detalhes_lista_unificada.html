@@ -110,12 +110,12 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('listas_unificadas') }}">
+                        <a class="nav-link" href="{{ url_for('admin.listas_unificadas') }}">
                             <i class="bi bi-arrow-left"></i> Voltar às Listas
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('admin') }}">
+                        <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
                             <i class="bi bi-house"></i> Painel
                         </a>
                     </li>
@@ -123,7 +123,7 @@
                         <span class="nav-link">Olá, {{ session.usuario_nome }}</span>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('logout') }}">Sair</a>
+                        <a class="nav-link" href="{{ url_for('auth.logout') }}">Sair</a>
                     </li>
                 </ul>
             </div>
@@ -139,8 +139,8 @@
         <!-- Breadcrumb -->
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{{ url_for('admin') }}">Painel Administrativo</a></li>
-                <li class="breadcrumb-item"><a href="{{ url_for('listas_unificadas') }}">Listas Unificadas</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Painel Administrativo</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('admin.listas_unificadas') }}">Listas Unificadas</a></li>
                 <li class="breadcrumb-item active" aria-current="page">{{ lista_info.nome_lista }}</li>
             </ol>
         </nav>
