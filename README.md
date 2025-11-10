@@ -1,2 +1,0 @@
-# System-EAN
-Multi-tenant
