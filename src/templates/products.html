@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Produtos - Sistema de Gestão de Mercado{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1><i class="bi bi-box"></i> Produtos</h1>
+    </div>
+    <div class="col-md-4 text-end">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+            <i class="bi bi-plus-circle"></i> Novo Produto
+        </button>
+    </div>
+</div>
+
+<!-- Tabela de Produtos -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Marca</th>
+                        <th>Preço Custo</th>
+                        <th>Preço Venda</th>
+                        <th>Estoque Mín.</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if products %}
+                        {% for product in products %}
+                        <tr>
+                            <td>{{ product.name }}</td>
+                            <td>{{ product.brand or '-' }}</td>
+                            <td>R$ {{ "%.2f"|format(product.cost_price) }}</td>
+                            <td>R$ {{ "%.2f"|format(product.sale_price) }}</td>
+                            <td>{{ product.minimum_stock }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-info" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" title="Deletar">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            Nenhum produto cadastrado. Clique em "Novo Produto" para começar.
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Novo Produto -->
+<div class="modal fade" id="addProductModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cadastrar Novo Produto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addProductForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="productName" class="form-label">Nome do Produto *</label>
+                            <input type="text" class="form-control" id="productName" name="name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="productGtin" class="form-label">Código de Barras (GTIN)</label>
+                            <input type="text" class="form-control" id="productGtin" name="gtin">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="productBrand" class="form-label">Marca</label>
+                            <input type="text" class="form-control" id="productBrand" name="brand">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="productCategory" class="form-label">Categoria *</label>
+                            <select class="form-control" id="productCategory" name="category_id" required>
+                                <option value="">Selecione uma categoria</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="productCostPrice" class="form-label">Preço de Custo (R$) *</label>
+                            <input type="number" class="form-control" id="productCostPrice" name="cost_price" step="0.01" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="productSalePrice" class="form-label">Preço de Venda (R$) *</label>
+                            <input type="number" class="form-control" id="productSalePrice" name="sale_price" step="0.01" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="productMinStock" class="form-label">Estoque Mínimo</label>
+                            <input type="number" class="form-control" id="productMinStock" name="minimum_stock" value="0">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="productUnit" class="form-label">Unidade de Medida</label>
+                            <select class="form-control" id="productUnit" name="unit_of_measure">
+                                <option value="UN">Unidade</option>
+                                <option value="KG">Quilograma</option>
+                                <option value="LT">Litro</option>
+                                <option value="M">Metro</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label for="productDescription" class="form-label">Descrição</label>
+                            <textarea class="form-control" id="productDescription" name="description" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Produto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('addProductForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    
+    try {
+        const response = await fetch('/api/produtos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Produto cadastrado com sucesso!');
+            location.reload();
+        } else {
+            alert('Erro: ' + result.error);
+        }
+    } catch (error) {
+        alert('Erro ao cadastrar produto: ' + error);
+    }
+});
+</script>
+{% endblock %}

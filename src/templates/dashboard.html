@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Sistema de Gestão de Mercado{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1><i class="bi bi-speedometer2"></i> Dashboard</h1>
+        <p class="text-muted">Bem-vindo ao {{ current_tenant.name }}!</p>
+    </div>
+</div>
+
+<!-- Métricas -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-muted">Total de Produtos</h6>
+                        <h2 class="card-text">{{ total_products }}</h2>
+                    </div>
+                    <i class="bi bi-box" style="font-size: 2rem; color: #667eea;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-muted">Alertas de Estoque</h6>
+                        <h2 class="card-text" style="color: #ff9800;">{{ low_stock|length }}</h2>
+                    </div>
+                    <i class="bi bi-exclamation-triangle" style="font-size: 2rem; color: #ff9800;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-muted">Alertas de Validade</h6>
+                        <h2 class="card-text" style="color: #dc3545;">{{ expiry_alerts|length }}</h2>
+                    </div>
+                    <i class="bi bi-calendar-x" style="font-size: 2rem; color: #dc3545;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-muted">Total de Alertas</h6>
+                        <h2 class="card-text">{{ low_stock|length + expiry_alerts|length }}</h2>
+                    </div>
+                    <i class="bi bi-bell" style="font-size: 2rem; color: #28a745;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ações Rápidas -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Ações Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('products') }}" class="btn btn-primary w-100">
+                            <i class="bi bi-plus-circle"></i> Cadastrar Produto
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('stock') }}" class="btn btn-success w-100">
+                            <i class="bi bi-arrow-down-circle"></i> Entrada de Estoque
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('stock') }}" class="btn btn-warning w-100">
+                            <i class="bi bi-arrow-up-circle"></i> Saída de Estoque
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('reports') }}" class="btn btn-info w-100">
+                            <i class="bi bi-file-earmark-text"></i> Ver Relatórios
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alertas -->
+{% if low_stock|length > 0 or expiry_alerts|length > 0 %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card border-warning">
+            <div class="card-header bg-warning">
+                <h5 class="card-title mb-0 text-white"><i class="bi bi-exclamation-triangle"></i> Alertas Pendentes</h5>
+            </div>
+            <div class="card-body">
+                {% if low_stock|length > 0 %}
+                <div class="mb-3">
+                    <h6 class="text-warning">Estoque Mínimo ({{ low_stock|length }})</h6>
+                    <ul class="list-unstyled">
+                        {% for product, stock in low_stock[:5] %}
+                        <li>
+                            <strong>{{ product.name }}</strong>: {{ stock.quantity }} unidades
+                            (mínimo: {{ product.minimum_stock }})
+                        </li>
+                        {% endfor %}
+                        {% if low_stock|length > 5 %}
+                        <li class="text-muted">... e mais {{ low_stock|length - 5 }} produtos</li>
+                        {% endif %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                {% if expiry_alerts|length > 0 %}
+                <div>
+                    <h6 class="text-danger">Validade ({{ expiry_alerts|length }})</h6>
+                    <p class="text-muted">Existem produtos próximos ao vencimento ou vencidos.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

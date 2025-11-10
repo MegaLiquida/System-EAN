@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar - Sistema de Gestão de Mercado</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .register-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+        .register-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .register-header h1 {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+        }
+        .register-header p {
+            color: #666;
+            margin-top: 10px;
+        }
+        .form-control {
+            border-radius: 5px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+        }
+        .btn-register {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .btn-register:hover {
+            opacity: 0.9;
+        }
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+        .login-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .section-title {
+            font-weight: bold;
+            color: #333;
+            margin-top: 20px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-header">
+            <h1><i class="bi bi-shop"></i> Gestão de Mercado</h1>
+            <p>Registre seu mercado e comece a usar o sistema</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <!-- Dados do Mercado -->
+            <div class="section-title">Informações do Mercado</div>
+            
+            <div class="mb-3">
+                <label for="tenantName" class="form-label">Nome do Mercado *</label>
+                <input type="text" class="form-control" id="tenantName" name="tenant_name" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="tenantEmail" class="form-label">Email do Mercado *</label>
+                <input type="email" class="form-control" id="tenantEmail" name="tenant_email" required>
+            </div>
+
+            <!-- Dados do Usuário Admin -->
+            <div class="section-title">Dados do Administrador</div>
+            
+            <div class="mb-3">
+                <label for="fullName" class="form-label">Nome Completo *</label>
+                <input type="text" class="form-control" id="fullName" name="full_name" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Email *</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="username" class="form-label">Usuário *</label>
+                <input type="text" class="form-control" id="username" name="username" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Senha *</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-register">Registrar</button>
+        </form>
+
+        <div class="login-link">
+            Já tem uma conta? <a href="{{ url_for('login') }}">Faça login aqui</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

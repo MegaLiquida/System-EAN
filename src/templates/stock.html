@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Estoque - Sistema de Gestão de Mercado{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1><i class="bi bi-diagram-3"></i> Gestão de Estoque</h1>
+    </div>
+</div>
+
+<!-- Abas -->
+<ul class="nav nav-tabs mb-4" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="entryTab" data-bs-toggle="tab" data-bs-target="#entryPanel" type="button" role="tab">
+            <i class="bi bi-arrow-down-circle"></i> Entrada de Estoque
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="exitTab" data-bs-toggle="tab" data-bs-target="#exitPanel" type="button" role="tab">
+            <i class="bi bi-arrow-up-circle"></i> Saída de Estoque
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="queryTab" data-bs-toggle="tab" data-bs-target="#queryPanel" type="button" role="tab">
+            <i class="bi bi-search"></i> Consultar Estoque
+        </button>
+    </li>
+</ul>
+
+<!-- Conteúdo das Abas -->
+<div class="tab-content">
+    <!-- Aba de Entrada -->
+    <div class="tab-pane fade show active" id="entryPanel" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Registrar Entrada de Estoque (Compra)</h5>
+            </div>
+            <div class="card-body">
+                <form id="entryForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="entryProduct" class="form-label">Produto *</label>
+                            <select class="form-control" id="entryProduct" name="product_id" required>
+                                <option value="">Selecione um produto</option>
+                                {% for product in products %}
+                                <option value="{{ product.id }}">{{ product.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="entryQuantity" class="form-label">Quantidade *</label>
+                            <input type="number" class="form-control" id="entryQuantity" name="quantity" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="entrySupplier" class="form-label">Fornecedor *</label>
+                            <select class="form-control" id="entrySupplier" name="supplier_id" required>
+                                <option value="">Selecione um fornecedor</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="entryCostPrice" class="form-label">Preço de Custo (R$) *</label>
+                            <input type="number" class="form-control" id="entryCostPrice" name="cost_price" step="0.01" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="entryExpiryDate" class="form-label">Data de Validade</label>
+                            <input type="date" class="form-control" id="entryExpiryDate" name="expiry_date">
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label for="entryNotes" class="form-label">Observações</label>
+                            <textarea class="form-control" id="entryNotes" name="notes" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Registrar Entrada
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aba de Saída -->
+    <div class="tab-pane fade" id="exitPanel" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Registrar Saída de Estoque (Venda)</h5>
+            </div>
+            <div class="card-body">
+                <form id="exitForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="exitProduct" class="form-label">Produto *</label>
+                            <select class="form-control" id="exitProduct" name="product_id" required>
+                                <option value="">Selecione um produto</option>
+                                {% for product in products %}
+                                <option value="{{ product.id }}">{{ product.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="exitQuantity" class="form-label">Quantidade *</label>
+                            <input type="number" class="form-control" id="exitQuantity" name="quantity" required>
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label for="exitNotes" class="form-label">Observações</label>
+                            <textarea class="form-control" id="exitNotes" name="notes" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-check-circle"></i> Registrar Saída
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aba de Consulta -->
+    <div class="tab-pane fade" id="queryPanel" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Consultar Estoque</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Aqui você pode consultar a posição de estoque por localização (Armazém e Prateleira).</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Formulário de Entrada
+document.getElementById('entryForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    
+    try {
+        const response = await fetch('/api/estoque/entrada', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Entrada registrada com sucesso!');
+            this.reset();
+        } else {
+            alert('Erro: ' + result.error);
+        }
+    } catch (error) {
+        alert('Erro ao registrar entrada: ' + error);
+    }
+});
+
+// Formulário de Saída
+document.getElementById('exitForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData);
+    
+    try {
+        const response = await fetch('/api/estoque/saida', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Saída registrada com sucesso!');
+            this.reset();
+        } else {
+            alert('Erro: ' + result.error);
+        }
+    } catch (error) {
+        alert('Erro ao registrar saída: ' + error);
+    }
+});
+</script>
+{% endblock %}

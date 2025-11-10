@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Relatórios - Sistema de Gestão de Mercado{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h1><i class="bi bi-file-earmark-text"></i> Relatórios</h1>
+    </div>
+</div>
+
+<!-- Abas de Relatórios -->
+<ul class="nav nav-tabs mb-4" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="positionTab" data-bs-toggle="tab" data-bs-target="#positionPanel" type="button" role="tab">
+            <i class="bi bi-pie-chart"></i> Posição de Estoque
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="movementTab" data-bs-toggle="tab" data-bs-target="#movementPanel" type="button" role="tab">
+            <i class="bi bi-graph-up"></i> Movimentação
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="expiryTab" data-bs-toggle="tab" data-bs-target="#expiryPanel" type="button" role="tab">
+            <i class="bi bi-calendar-x"></i> Validade
+        </button>
+    </li>
+</ul>
+
+<!-- Conteúdo das Abas -->
+<div class="tab-content">
+    <!-- Relatório de Posição -->
+    <div class="tab-pane fade show active" id="positionPanel" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Relatório de Posição de Estoque</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Período De:</label>
+                        <input type="date" class="form-control" id="positionFromDate">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Período Até:</label>
+                        <input type="date" class="form-control" id="positionToDate">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">&nbsp;</label>
+                        <button class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> Gerar Relatório
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Armazém</th>
+                                <th>Prateleira</th>
+                                <th>Total</th>
+                                <th>Valor Custo</th>
+                                <th>Valor Venda</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    Clique em "Gerar Relatório" para visualizar os dados
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Relatório de Movimentação -->
+    <div class="tab-pane fade" id="movementPanel" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Relatório de Movimentação</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Período De:</label>
+                        <input type="date" class="form-control" id="movementFromDate">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Período Até:</label>
+                        <input type="date" class="form-control" id="movementToDate">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Tipo:</label>
+                        <select class="form-control">
+                            <option value="">Todos</option>
+                            <option value="entry">Entrada</option>
+                            <option value="exit">Saída</option>
+                            <option value="transfer">Transferência</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
+                        <button class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> Gerar Relatório
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Produto</th>
+                                <th>Tipo</th>
+                                <th>Quantidade</th>
+                                <th>Usuário</th>
+                                <th>Observações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    Clique em "Gerar Relatório" para visualizar os dados
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Relatório de Validade -->
+    <div class="tab-pane fade" id="expiryPanel" role="tabpanel">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Relatório de Validade</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label">Status:</label>
+                        <select class="form-control">
+                            <option value="">Todos</option>
+                            <option value="valid">Válido</option>
+                            <option value="warning">Alerta</option>
+                            <option value="expired">Vencido</option>
+                        </select>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label">&nbsp;</label>
+                        <button class="btn btn-primary w-100">
+                            <i class="bi bi-search"></i> Gerar Relatório
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Data de Validade</th>
+                                <th>Quantidade</th>
+                                <th>Status</th>
+                                <th>Dias para Vencer</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">
+                                    Clique em "Gerar Relatório" para visualizar os dados
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
